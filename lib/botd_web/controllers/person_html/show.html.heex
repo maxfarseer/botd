@@ -1,0 +1,18 @@
+<.header>
+  Person {@person.id}
+  <:actions>
+    <.link href={~p"/people"}>
+      <.button>Back to people</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name">{@person.name}</:item>
+  <:item title="Nickname">{@person.nickname}</:item>
+  <:item title="Birth date">{@person.birth_date}</:item>
+  <:item title="Death date">{@person.death_date}</:item>
+  <:item title="Place">{@person.place}</:item>
+  <:item title="Cause of death">{@person.cause_of_death}</:item>
+  <:item title="Description">{@person.description}</:item>
+</.list>

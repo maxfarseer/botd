@@ -1,9 +1,14 @@
 defmodule BotdWeb.PersonController do
   use BotdWeb, :controller
+  alias Botd.People
 
   def index(conn, _params) do
-    # The home page is often custom made,
-    # so skip the default app layout.
-    render(conn, :index)
+    people = People.list_people()
+    render(conn, :index, people: people)
+  end
+
+  def show(conn, %{"id" => id}) do
+    person = People.get_person!(id)
+    render(conn, :show, person: person)
   end
 end

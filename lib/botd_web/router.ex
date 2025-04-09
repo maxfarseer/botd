@@ -18,6 +18,8 @@ defmodule BotdWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    # only: [:index, :show]
+    get "/people", PersonController, :index
   end
 
   # Other scopes may use custom stacks.

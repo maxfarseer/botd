@@ -1,0 +1,11 @@
+<.header>
+  New Person
+  <:subtitle>Create a new person record.</:subtitle>
+  <:actions>
+    <.link href={~p"/people"}>
+      <.button>Back to people</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.person_form changeset={@changeset} action={~p"/people"} />

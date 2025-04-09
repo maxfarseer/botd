@@ -1,4 +1,19 @@
 <.flash_group flash={@flash} />
-<div>
-  People :index
-</div>
+<.header>
+  People
+  <:actions>
+    <.link href={~p"/people/new"}>
+      <.button>New Person</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="people" rows={@people}>
+  <:col :let={person} label="Name">{person.name}</:col>
+  <:col :let={person} label="Death date">{person.death_date}</:col>
+  <:col :let={person} label="Place">{person.place}</:col>
+
+  <:action :let={person}>
+    <.link navigate={~p"/people/#{person}"}>Show</.link>
+  </:action>
+</.table>

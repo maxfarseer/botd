@@ -1,0 +1,79 @@
+version: 2.1
+
+jobs:
+  build_and_test:
+    docker:
+      - image: cimg/elixir:1.18.2-erlang-26.2.1-node
+      - image: cimg/postgres:17.4
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: botd_test
+
+    environment:
+      MIX_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost/botd_test
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-mix-cache-{{ checksum "mix.lock" }}
+            - v1-mix-cache-{{ .Branch }}
+            - v1-mix-cache
+
+      - restore_cache:
+          keys:
+            - v1-build-cache-{{ .Branch }}
+            - v1-build-cache
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+
+      - run: mix deps.compile
+
+      - save_cache:
+          key: v1-mix-cache-{{ checksum "mix.lock" }}
+          paths: "deps"
+
+      - save_cache:
+          key: v1-mix-cache-{{ .Branch }}
+          paths: "deps"
+
+      - save_cache:
+          key: v1-mix-cache
+          paths: "deps"
+
+      - run: mix compile
+
+      - save_cache:
+          key: v1-build-cache-{{ .Branch }}
+          paths: "_build"
+
+      - save_cache:
+          key: v1-build-cache
+          paths: "_build"
+
+      - run:
+          name: Waiting for PostgreSQL
+          command: |
+            until psql -h localhost -U postgres -c '\l' > /dev/null 2>&1; do
+              echo "Warte auf PostgreSQL..."
+              sleep 1
+            done
+            echo "PostgreSQL ist bereit!"
+
+      - run: mix ecto.create
+      - run: mix ecto.migrate
+
+      - run:
+          name: Tests ausführen
+          command: mix test
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build_and_test

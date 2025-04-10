@@ -1,6 +1,6 @@
 jobs:
   build:
     docker:
-      - image: cimg/postgres:17.4.0
+      - image: cimg/postgres:17.4
     steps:
       - checkout

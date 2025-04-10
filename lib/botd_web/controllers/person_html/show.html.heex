@@ -4,6 +4,11 @@
     <.link href={~p"/people"}>
       <.button>Back to people</.button>
     </.link>
+    <.link href={~p"/people/#{@person}/edit"}>
+      <.button>
+        <.icon name="hero-pencil" class="h-5 w-5 mr-2" /> Edit
+      </.button>
+    </.link>
     <.link
       href={~p"/people/#{@person}"}
       method="delete"

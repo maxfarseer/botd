@@ -29,4 +29,13 @@ defmodule BotdWeb.PersonController do
     person = People.get_person!(id)
     render(conn, :show, person: person)
   end
+
+  def delete(conn, %{"id" => id}) do
+    person = People.get_person!(id)
+    {:ok, _person} = People.delete_person(person)
+
+    conn
+    |> put_flash(:info, "Person deleted successfully.")
+    |> redirect(to: ~p"/people")
+  end
 end

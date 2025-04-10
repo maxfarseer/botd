@@ -72,9 +72,6 @@ jobs:
           name: Tests ausführen
           command: mix test
 
-      # Optional: Codeabdeckung messen
-      - run: mix coveralls.circle
-
 workflows:
   version: 2
   build_and_test:

@@ -16,6 +16,10 @@ defmodule Botd.Application do
       {Finch, name: Botd.Finch},
       # Start a worker by calling: Botd.Worker.start_link(arg)
       # {Botd.Worker, arg},
+
+      # TODO:max ai suggest this, check why
+      # {Pow.Supervisor, otp_app: :botd},
+
       # Start to serve requests, typically the last entry
       BotdWeb.Endpoint
     ]

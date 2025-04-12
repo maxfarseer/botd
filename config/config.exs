@@ -63,10 +63,8 @@ config :phoenix, :json_library, Jason
 
 config :botd, :pow,
   user: Botd.Users.User,
-  repo: Botd.Repo
-
-# TODO:max, do we need it?
-# web_module: BotdWeb
+  repo: Botd.Repo,
+  web_module: BotdWeb
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

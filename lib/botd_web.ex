@@ -77,6 +77,9 @@ defmodule BotdWeb do
 
       # Include general helpers for rendering HTML
       unquote(html_helpers())
+
+      # Additional layout helpers
+      import BotdWeb.LayoutHelpers
     end
   end
 

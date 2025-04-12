@@ -26,7 +26,7 @@ defmodule BotdWeb.PersonHTMLTest do
   end
 
   describe "Person show.html" do
-    test "hide Edit and Delete buttons for authenticated users", %{
+    test "hide Edit and Delete buttons for unauthenticated users", %{
       conn: conn,
       person: person
     } do
@@ -37,10 +37,10 @@ defmodule BotdWeb.PersonHTMLTest do
       html = html_response(conn, 200)
       {:ok, document} = Floki.parse_document(html)
 
-      edit_button = Floki.find(document, "a[href*='/edit']")
+      edit_button = Floki.find(document, "[data-test-id='edit-person']")
       assert edit_button == []
 
-      delete_button = Floki.find(document, "a[data-method='delete']")
+      delete_button = Floki.find(document, "[data-test-id='remove-person']")
       assert delete_button == []
     end
 
@@ -59,10 +59,10 @@ defmodule BotdWeb.PersonHTMLTest do
       html = html_response(conn, 200)
       {:ok, document} = Floki.parse_document(html)
 
-      edit_button = Floki.find(document, "a[href$='/edit']")
+      edit_button = Floki.find(document, "[data-test-id='edit-person']")
       assert edit_button != []
 
-      delete_button = Floki.find(document, "a[data-confirm]")
+      delete_button = Floki.find(document, "[data-test-id='remove-person']")
       assert delete_button != []
     end
   end

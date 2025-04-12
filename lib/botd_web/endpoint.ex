@@ -49,5 +49,6 @@ defmodule BotdWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  plug Pow.Plug.Session, otp_app: :botd
   plug BotdWeb.Router
 end

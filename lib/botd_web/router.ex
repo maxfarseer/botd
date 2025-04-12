@@ -30,6 +30,7 @@ defmodule BotdWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/people/new", PersonController, :new
     resources "/people", PersonController, only: [:index, :show]
   end
 
@@ -37,6 +38,7 @@ defmodule BotdWeb.Router do
   scope "/", BotdWeb do
     pipe_through [:browser, :protected]
 
+    get "/logs", ActivityLogController, :index
     resources "/people", PersonController, except: [:index, :show]
   end
 

@@ -2,6 +2,7 @@ defmodule BotdWeb.PersonController do
   use BotdWeb, :controller
   alias Botd.People
   alias Botd.People.Person
+  alias Botd.ActivityLogs
 
   def index(conn, _params) do
     people = People.list_people()
@@ -16,6 +17,9 @@ defmodule BotdWeb.PersonController do
   def create(conn, %{"person" => person_params}) do
     case People.create_person(person_params) do
       {:ok, person} ->
+        user = conn.assigns[:current_user]
+        ActivityLogs.log_person_action(:create, person, user)
+
         conn
         |> put_flash(:info, "Person created successfully.")
         |> redirect(to: ~p"/people/#{person}")
@@ -41,6 +45,9 @@ defmodule BotdWeb.PersonController do
 
     case People.update_person(person, person_params) do
       {:ok, person} ->
+        user = conn.assigns[:current_user]
+        ActivityLogs.log_person_action(:edit, person, user)
+
         conn
         |> put_flash(:info, "Person updated successfully.")
         |> redirect(to: ~p"/people/#{person}")
@@ -53,6 +60,9 @@ defmodule BotdWeb.PersonController do
   def delete(conn, %{"id" => id}) do
     person = People.get_person!(id)
     {:ok, _person} = People.delete_person(person)
+
+    user = conn.assigns[:current_user]
+    ActivityLogs.log_person_action(:remove, person, user)
 
     conn
     |> put_flash(:info, "Person deleted successfully.")

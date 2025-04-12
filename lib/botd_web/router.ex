@@ -15,6 +15,11 @@ defmodule BotdWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :protected do
+    plug Pow.Plug.RequireAuthenticated,
+      error_handler: Pow.Phoenix.PlugErrorHandler
+  end
+
   scope "/" do
     pipe_through :browser
 
@@ -25,15 +30,15 @@ defmodule BotdWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    resources "/people", PersonController
+    resources "/people", PersonController, only: [:index, :show]
   end
 
-  # protecdet route example
-  # scope "/", BotdWeb do
-  #  pipe_through [:browser, :protected]
-  #
-  #  resources "/people", PersonController, except: [:index, :show]
-  # end
+  # protected routes
+  scope "/", BotdWeb do
+    pipe_through [:browser, :protected]
+
+    resources "/people", PersonController, except: [:index, :show]
+  end
 
   # Other scopes may use custom stacks.
   # scope "/api", BotdWeb do

@@ -22,7 +22,16 @@ defmodule BotdWeb.RouterTest do
 
     {:ok, user} = %User{} |> User.changeset(user_params) |> Repo.insert()
 
-    %{person: person, user: user}
+    # Valid person params for creation and update tests
+    valid_person_params = %{
+      "person" => %{
+        name: "New Test Person",
+        death_date: "2023-02-02",
+        place: "New Test City"
+      }
+    }
+
+    %{person: person, user: user, valid_person_params: valid_person_params}
   end
 
   describe "public routes" do
@@ -59,6 +68,28 @@ defmodule BotdWeb.RouterTest do
       assert conn.status == 302
       assert redirected_to(conn) =~ "/session/new"
     end
+
+    test "POST /people redirects to login", %{conn: conn, valid_person_params: params} do
+      conn = post(conn, "/people", params)
+      assert conn.status == 302
+      assert redirected_to(conn) =~ "/session/new"
+    end
+
+    test "PUT /people/:id redirects to login", %{
+      conn: conn,
+      person: person,
+      valid_person_params: params
+    } do
+      conn = put(conn, "/people/#{person.id}", params)
+      assert conn.status == 302
+      assert redirected_to(conn) =~ "/session/new"
+    end
+
+    test "DELETE /people/:id redirects to login", %{conn: conn, person: person} do
+      conn = delete(conn, "/people/#{person.id}")
+      assert conn.status == 302
+      assert redirected_to(conn) =~ "/session/new"
+    end
   end
 
   describe "protected routes - authenticated" do
@@ -78,6 +109,39 @@ defmodule BotdWeb.RouterTest do
     test "GET /people/:id/edit returns 200", %{conn: conn, person: person} do
       conn = get(conn, "/people/#{person.id}/edit")
       assert conn.status == 200
+    end
+
+    test "POST /people creates a person and redirects", %{conn: conn, valid_person_params: params} do
+      conn = post(conn, "/people", params)
+      assert conn.status == 302
+      assert redirected_to(conn) =~ "/people/"
+      # The path should include the ID of the newly created person
+      assert Regex.match?(~r{/people/\d+}, redirected_to(conn))
+    end
+
+    test "PUT /people/:id updates a person and redirects", %{
+      conn: conn,
+      person: person,
+      valid_person_params: params
+    } do
+      conn = put(conn, "/people/#{person.id}", params)
+      assert conn.status == 302
+      assert redirected_to(conn) == "/people/#{person.id}"
+
+      # Verify the person was updated
+      updated_person = People.get_person!(person.id)
+      assert updated_person.name == params["person"].name
+    end
+
+    test "DELETE /people/:id removes a person and redirects", %{conn: conn, person: person} do
+      conn = delete(conn, "/people/#{person.id}")
+      assert conn.status == 302
+      assert redirected_to(conn) == "/people"
+
+      # Verify the person was deleted
+      assert_raise Ecto.NoResultsError, fn ->
+        People.get_person!(person.id)
+      end
     end
   end
 end

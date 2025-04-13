@@ -69,7 +69,11 @@ jobs:
       - run: mix ecto.migrate
 
       - run:
-          name: Tests ausführen
+          name: Static code analysis
+          command: mix credo --strict
+
+      - run:
+          name: Run tests
           command: mix test
 
 workflows:

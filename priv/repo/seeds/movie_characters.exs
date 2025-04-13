@@ -1,0 +1,93 @@
+defmodule Botd.Seeds.MovieCharacters do
+  @moduledoc """
+  Seed script to populate the database with famous deceased movie characters.
+
+  This script reads character data from movie_characters.csv file
+  and imports them into the database.
+  """
+
+  alias Botd.People
+  alias NimbleCSV.RFC4180, as: CSV
+
+  @doc """
+  Reads the CSV file and inserts the characters into the database.
+  """
+  def seed do
+    # Path to the CSV file
+    file_path = Path.join(__DIR__, "movie_characters.csv")
+
+    # Check if CSV file exists
+    unless File.exists?(file_path) do
+      raise "CSV file not found at #{file_path}. Please ensure movie_characters.csv exists."
+    end
+
+    # Count how many characters were added successfully
+    {count, errors} =
+      file_path
+      |> File.read!()
+      |> CSV.parse_string(skip_headers: true)
+      |> Enum.reduce({0, 0}, fn person_data, {success, errors} ->
+        case insert_person(person_data) do
+          {:ok, _} -> {success + 1, errors}
+          {:error, _} -> {success, errors + 1}
+        end
+      end)
+
+    IO.puts("✓ Added #{count} movie characters to the database")
+
+    if errors > 0 do
+      IO.puts("⚠ #{errors} characters could not be added due to errors")
+    end
+  end
+
+  defp insert_person([name, nickname, birth_date, death_date, place, cause_of_death, description]) do
+    # Parse dates
+    parsed_birth_date = parse_date(birth_date)
+    parsed_death_date = parse_date(death_date)
+
+    # Create person attributes
+    person_attrs = %{
+      name: name,
+      nickname: nickname,
+      birth_date: parsed_birth_date,
+      death_date: parsed_death_date,
+      place: place,
+      cause_of_death: cause_of_death,
+      description: description
+    }
+
+    # Insert person and return result
+    case People.create_person(person_attrs) do
+      {:ok, person} = result ->
+        IO.puts("Added person: #{person.name}")
+        result
+
+      {:error, changeset} = error ->
+        IO.puts("Error adding #{name}: #{inspect(changeset.errors)}")
+        error
+    end
+  end
+
+  defp parse_date(""), do: nil
+  defp parse_date(date_string) do
+    case Date.from_iso8601(date_string) do
+      {:ok, date} -> date
+      {:error, reason} ->
+        IO.puts("Warning: Could not parse date '#{date_string}': #{reason}")
+        nil
+    end
+  end
+end
+
+# Run the seed function if this script is executed directly
+if Code.ensure_loaded?(Botd.People) do
+  # Check if NimbleCSV is available
+  unless Code.ensure_loaded?(NimbleCSV) do
+    IO.puts("Installing NimbleCSV dependency...")
+    Mix.install([{:nimble_csv, "~> 1.1"}])
+  end
+
+  Botd.Seeds.MovieCharacters.seed()
+else
+  IO.puts("Error: Cannot load Botd.People. Make sure the application is compiled.")
+end

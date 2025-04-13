@@ -61,7 +61,8 @@ defmodule Botd.MixProject do
       {:pow, "~> 1.0.39"},
       {:floki, ">= 0.37.1", only: :test},
       {:git_hooks, "~> 0.8.0", only: [:dev], runtime: false},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:nimble_csv, "~> 1.2"}
     ]
   end
 

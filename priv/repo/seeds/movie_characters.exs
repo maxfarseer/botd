@@ -7,6 +7,7 @@ defmodule Botd.Seeds.MovieCharacters do
   """
 
   alias Botd.People
+  alias Botd.ActivityLogs
   alias NimbleCSV.RFC4180, as: CSV
 
   @doc """
@@ -21,13 +22,16 @@ defmodule Botd.Seeds.MovieCharacters do
       raise "CSV file not found at #{file_path}. Please ensure movie_characters.csv exists."
     end
 
+    # Create a system user for seeding operations
+    system_user = %{id: 0, email: "system@bookofthedead.local"}
+
     # Count how many characters were added successfully
     {count, errors} =
       file_path
       |> File.read!()
       |> CSV.parse_string(skip_headers: true)
       |> Enum.reduce({0, 0}, fn person_data, {success, errors} ->
-        case insert_person(person_data) do
+        case insert_person(person_data, system_user) do
           {:ok, _} -> {success + 1, errors}
           {:error, _} -> {success, errors + 1}
         end
@@ -40,7 +44,7 @@ defmodule Botd.Seeds.MovieCharacters do
     end
   end
 
-  defp insert_person([name, nickname, birth_date, death_date, place, cause_of_death, description]) do
+  defp insert_person([name, nickname, birth_date, death_date, place, cause_of_death, description], user) do
     # Parse dates
     parsed_birth_date = parse_date(birth_date)
     parsed_death_date = parse_date(death_date)
@@ -56,10 +60,12 @@ defmodule Botd.Seeds.MovieCharacters do
       description: description
     }
 
-    # Insert person and return result
+    # Insert person, log activity, and return result
     case People.create_person(person_attrs) do
       {:ok, person} = result ->
-        IO.puts("Added person: #{person.name}")
+        # Log the creation action
+        ActivityLogs.log_person_action(:create, person, user)
+        IO.puts("Added person: #{person.name} (with activity log)")
         result
 
       {:error, changeset} = error ->

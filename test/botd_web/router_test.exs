@@ -5,6 +5,7 @@ defmodule BotdWeb.RouterTest do
   alias Botd.Users.User
 
   setup do
+    # Create a test person
     {:ok, person} =
       People.create_person(%{
         name: "Test Person",
@@ -12,13 +13,31 @@ defmodule BotdWeb.RouterTest do
         place: "Test City"
       })
 
-    user_params = %{
-      email: "test@example.com",
+    # Create users with different roles
+    admin_params = %{
+      email: "admin@example.com",
       password: "secret1234",
-      password_confirmation: "secret1234"
+      password_confirmation: "secret1234",
+      role: :admin
     }
 
-    {:ok, user} = %User{} |> User.changeset(user_params) |> Repo.insert()
+    moderator_params = %{
+      email: "moderator@example.com",
+      password: "secret1234",
+      password_confirmation: "secret1234",
+      role: :moderator
+    }
+
+    member_params = %{
+      email: "member@example.com",
+      password: "secret1234",
+      password_confirmation: "secret1234",
+      role: :member
+    }
+
+    {:ok, admin} = %User{} |> User.changeset(admin_params) |> Repo.insert()
+    {:ok, moderator} = %User{} |> User.changeset(moderator_params) |> Repo.insert()
+    {:ok, member} = %User{} |> User.changeset(member_params) |> Repo.insert()
 
     valid_person_params = %{
       "person" => %{
@@ -28,7 +47,13 @@ defmodule BotdWeb.RouterTest do
       }
     }
 
-    %{person: person, user: user, valid_person_params: valid_person_params}
+    %{
+      person: person,
+      admin: admin,
+      moderator: moderator,
+      member: member,
+      valid_person_params: valid_person_params
+    }
   end
 
   describe "public routes" do
@@ -42,11 +67,6 @@ defmodule BotdWeb.RouterTest do
       assert conn.status == 200
     end
 
-    test "GET /people/new returns 200", %{conn: conn} do
-      conn = get(conn, "/people/new")
-      assert conn.status == 200
-    end
-
     test "GET /people/:id returns 200", %{conn: conn, person: person} do
       conn = get(conn, "/people/#{person.id}")
       assert conn.status == 200
@@ -55,7 +75,7 @@ defmodule BotdWeb.RouterTest do
 
   describe "protected routes - unauthenticated" do
     test "GET /logs redirects to login", %{conn: conn} do
-      conn = get(conn, "/logs")
+      conn = get(conn, "/p/logs")
       assert conn.status == 302
       assert redirected_to(conn) =~ "/session/new"
     end
@@ -89,18 +109,19 @@ defmodule BotdWeb.RouterTest do
     end
   end
 
-  describe "protected routes - authenticated" do
-    setup %{conn: conn, user: user} do
+  describe "protected routes - authenticated as member" do
+    setup %{conn: conn, member: member} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(user, otp_app: :botd)
+        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
 
       %{conn: conn}
     end
 
-    test "GET /logs returns 200", %{conn: conn} do
-      conn = get(conn, "/logs")
-      assert conn.status == 200
+    test "GET /logs is forbidden", %{conn: conn} do
+      conn = get(conn, "/p/logs")
+      assert conn.status == 302
+      assert redirected_to(conn) == "/"
     end
 
     test "GET /people/:id/edit returns 200", %{conn: conn, person: person} do
@@ -112,7 +133,6 @@ defmodule BotdWeb.RouterTest do
       conn = post(conn, "/people", params)
       assert conn.status == 302
       assert redirected_to(conn) =~ "/people/"
-      # The path should include the ID of the newly created person
       assert Regex.match?(~r{/people/\d+}, redirected_to(conn))
     end
 
@@ -125,7 +145,6 @@ defmodule BotdWeb.RouterTest do
       assert conn.status == 302
       assert redirected_to(conn) == "/people/#{person.id}"
 
-      # Verify the person was updated
       updated_person = People.get_person!(person.id)
       assert updated_person.name == params["person"].name
     end
@@ -135,10 +154,40 @@ defmodule BotdWeb.RouterTest do
       assert conn.status == 302
       assert redirected_to(conn) == "/people"
 
-      # Verify the person was deleted
       assert_raise Ecto.NoResultsError, fn ->
         People.get_person!(person.id)
       end
+    end
+  end
+
+  describe "protected routes - authenticated as moderator" do
+    setup %{conn: conn, moderator: moderator} do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(moderator, otp_app: :botd)
+
+      %{conn: conn}
+    end
+
+    test "GET /logs is forbidden", %{conn: conn} do
+      conn = get(conn, "/p/logs")
+      assert conn.status == 302
+      assert redirected_to(conn) == "/"
+    end
+  end
+
+  describe "protected routes - authenticated as admin" do
+    setup %{conn: conn, admin: admin} do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+
+      %{conn: conn}
+    end
+
+    test "GET /logs returns 200", %{conn: conn} do
+      conn = get(conn, "/p/logs")
+      assert conn.status == 200
     end
   end
 end

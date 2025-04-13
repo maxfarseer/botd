@@ -24,6 +24,21 @@ mix clean
 mix compile
 ```
 
+## Ecto update user to :admin
+
+In the terminal `iex -S mix`
+
+```
+alias Botd.Repo
+alias Botd.Users.User
+
+# Benutzer finden
+user = Repo.get_by(User, email: "user@example.com")
+
+# Rolle ändern
+{:ok, _updated_user} = user |> Ecto.Changeset.change(role: :admin) |> Repo.update()
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

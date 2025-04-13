@@ -42,19 +42,19 @@ defmodule BotdWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    get "/people/new", PersonController, :new
     resources "/people", PersonController, only: [:index, :show]
   end
 
-  # protected routes
+  # protected routes (aka /p/*)
   scope "/", BotdWeb do
     pipe_through :moderator
 
+    get "/p/new", PersonController, :new
     resources "/people", PersonController, except: [:index, :show]
   end
 
   # Admin-only routes
-  scope "/", BotdWeb do
+  scope "/p", BotdWeb do
     pipe_through :admin
 
     get "/logs", ActivityLogController, :index

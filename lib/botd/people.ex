@@ -1,8 +1,22 @@
-# contexts
 defmodule Botd.People do
+  @moduledoc """
+  The People context.
+
+  This context handles all database operations related to people (aka `Persons`) records,
+  providing functions for CRUD operations (Create, Read, Update, Delete)
+  and other business logic related to managing people data.
+
+  Example:
+
+      # List all people
+      people = Botd.People.list_people()
+
+      # Get a specific person
+      person = Botd.People.get_person!(123)
+  """
   import Ecto.Query, warn: false
-  alias Botd.Repo
   alias Botd.People.Person
+  alias Botd.Repo
 
   def list_people do
     Repo.all(Person)

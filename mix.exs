@@ -60,7 +60,8 @@ defmodule Botd.MixProject do
       # Added
       {:pow, "~> 1.0.39"},
       {:floki, ">= 0.37.1", only: :test},
-      {:git_hooks, "~> 0.8.0", only: [:dev], runtime: false}
+      {:git_hooks, "~> 0.8.0", only: [:dev], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

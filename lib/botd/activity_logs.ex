@@ -1,8 +1,30 @@
 defmodule Botd.ActivityLogs do
+  @moduledoc """
+  The ActivityLogs context.
+
+  This context provides functions for managing activity logs, including
+  creating, retrieving, and querying logs of user actions within the system.
+
+  Activity logs track who did what and when, providing an audit trail of
+  operations performed on entities like people.
+
+  Example:
+
+      # Log a create action
+      Botd.ActivityLogs.log_person_action(:create, person, current_user)
+
+      # List all activity logs
+      logs = Botd.ActivityLogs.list_activity_logs()
+
+  Example and @doc for `list_activity_logs` fn remained in this module, check later auto-generated docs to decide what to keep.
+  """
   import Ecto.Query, warn: false
   alias Botd.ActivityLogs.ActivityLog
   alias Botd.Repo
 
+  @doc """
+  Returns a list of all activity logs, sorted by insertion date (newest first).
+  """
   def list_activity_logs do
     Repo.all(from l in ActivityLog, order_by: [desc: l.inserted_at])
   end

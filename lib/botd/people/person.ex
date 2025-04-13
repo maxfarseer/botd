@@ -1,5 +1,12 @@
-# schema
 defmodule Botd.People.Person do
+  @moduledoc """
+  The Person schema and changeset functions.
+
+  This module defines the Person schema with attributes. It also provides
+  changeset functions for validating and preparing data for database operations.
+
+  Persons represent the core data entities in the Book of the Dead (BOTD) application.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 

@@ -5,7 +5,6 @@ defmodule BotdWeb.RouterTest do
   alias Botd.Users.User
 
   setup do
-    # Create a person for testing
     {:ok, person} =
       People.create_person(%{
         name: "Test Person",
@@ -13,7 +12,6 @@ defmodule BotdWeb.RouterTest do
         place: "Test City"
       })
 
-    # Create a user for testing
     user_params = %{
       email: "test@example.com",
       password: "secret1234",
@@ -22,7 +20,6 @@ defmodule BotdWeb.RouterTest do
 
     {:ok, user} = %User{} |> User.changeset(user_params) |> Repo.insert()
 
-    # Valid person params for creation and update tests
     valid_person_params = %{
       "person" => %{
         name: "New Test Person",

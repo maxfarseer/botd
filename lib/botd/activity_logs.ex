@@ -1,7 +1,7 @@
 defmodule Botd.ActivityLogs do
   import Ecto.Query, warn: false
-  alias Botd.Repo
   alias Botd.ActivityLogs.ActivityLog
+  alias Botd.Repo
 
   def list_activity_logs do
     Repo.all(from l in ActivityLog, order_by: [desc: l.inserted_at])

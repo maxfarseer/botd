@@ -1,3 +1,4 @@
+# credo:disable-for-this-file Credo.Check.Design.AliasUsage
 defmodule BotdWeb.CoreComponents do
   @moduledoc """
   Provides core UI components.

@@ -1,8 +1,8 @@
 defmodule BotdWeb.PersonController do
   use BotdWeb, :controller
+  alias Botd.ActivityLogs
   alias Botd.People
   alias Botd.People.Person
-  alias Botd.ActivityLogs
 
   def index(conn, _params) do
     people = People.list_people()

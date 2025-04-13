@@ -5,8 +5,6 @@ defmodule BotdWeb.RouterTest do
   alias Botd.Users.User
 
   setup do
-    not_used = %{}
-
     {:ok, person} =
       People.create_person(%{
         name: "Test Person",

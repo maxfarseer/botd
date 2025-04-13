@@ -17,6 +17,13 @@ Imports dead characters
 mix run priv/repo/seeds/movie_characters.exs
 ```
 
+## When it does not work, but it should
+
+```
+mix clean
+mix compile
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

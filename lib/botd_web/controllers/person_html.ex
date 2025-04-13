@@ -1,6 +1,8 @@
 defmodule BotdWeb.PersonHTML do
   use BotdWeb, :html
 
+  import BotdWeb.Helpers
+
   embed_templates "person_html/*"
 
   @doc """

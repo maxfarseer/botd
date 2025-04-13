@@ -4,7 +4,7 @@
     <.link href={~p"/people"}>
       <.button>Back to people</.button>
     </.link>
-    <%= if @current_user do %>
+    <%= if moderator_or_admin?(@conn) do %>
       <.link href={~p"/people/#{@person}/edit"} data-test-id="edit-person">
         <.button>
           <.icon name="hero-pencil" class="h-5 w-5 mr-2" /> Edit

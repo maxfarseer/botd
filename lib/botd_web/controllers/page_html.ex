@@ -6,5 +6,7 @@ defmodule BotdWeb.PageHTML do
   """
   use BotdWeb, :html
 
+  import BotdWeb.Helpers
+
   embed_templates "page_html/*"
 end

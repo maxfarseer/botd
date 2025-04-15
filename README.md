@@ -17,6 +17,28 @@ Imports dead characters
 mix run priv/repo/seeds/movie_characters.exs
 ```
 
+## When it does not work, but it should
+
+```
+mix clean
+mix compile
+```
+
+## Ecto update user to :admin
+
+In the terminal `iex -S mix`
+
+```
+alias Botd.Repo
+alias Botd.Users.User
+
+# Find a user
+user = Repo.get_by(User, email: "user@example.com")
+
+# Change the role
+{:ok, _updated_user} = user |> Ecto.Changeset.change(role: :admin) |> Repo.update()
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

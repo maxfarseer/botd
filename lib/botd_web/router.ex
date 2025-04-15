@@ -20,6 +20,18 @@ defmodule BotdWeb.Router do
       error_handler: Pow.Phoenix.PlugErrorHandler
   end
 
+  pipeline :admin do
+    plug :browser
+    plug :protected
+    plug BotdWeb.Plugs.EnsureRole, :admin
+  end
+
+  pipeline :moderator do
+    plug :browser
+    plug :protected
+    plug BotdWeb.Plugs.EnsureRole, [:admin, :moderator]
+  end
+
   scope "/" do
     pipe_through :browser
 
@@ -30,16 +42,26 @@ defmodule BotdWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    get "/people/new", PersonController, :new
-    resources "/people", PersonController, only: [:index, :show]
+    get "/people", PersonController, :index
+    get "/people/:id", PersonController, :show
   end
 
-  # protected routes
-  scope "/", BotdWeb do
-    pipe_through [:browser, :protected]
+  scope "/protected", BotdWeb do
+    pipe_through :moderator
+
+    get "/people/new", PersonController, :new
+    post "/people", PersonController, :create
+    get "/people/:id/edit", PersonController, :edit
+    put "/people/:id", PersonController, :update
+    patch "/people/:id", PersonController, :update
+    delete "/people/:id", PersonController, :delete
+  end
+
+  # Admin-only routes
+  scope "/admin", BotdWeb do
+    pipe_through :admin
 
     get "/logs", ActivityLogController, :index
-    resources "/people", PersonController, except: [:index, :show]
   end
 
   # Other scopes may use custom stacks.

@@ -4,14 +4,14 @@
     <.link href={~p"/people"}>
       <.button>Back to people</.button>
     </.link>
-    <%= if @current_user do %>
-      <.link href={~p"/people/#{@person}/edit"} data-test-id="edit-person">
+    <%= if moderator_or_admin?(@conn) do %>
+      <.link href={~p"/protected/people/#{@person}/edit"} data-test-id="edit-person">
         <.button>
           <.icon name="hero-pencil" class="h-5 w-5 mr-2" /> Edit
         </.button>
       </.link>
       <.link
-        href={~p"/people/#{@person}"}
+        href={~p"/protected/people/#{@person}"}
         method="delete"
         data-confirm="Are you sure you want to delete this person? This action cannot be undone."
         data-test-id="remove-person"

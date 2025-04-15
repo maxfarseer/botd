@@ -32,10 +32,10 @@ In the terminal `iex -S mix`
 alias Botd.Repo
 alias Botd.Users.User
 
-# Benutzer finden
+# Find a user
 user = Repo.get_by(User, email: "user@example.com")
 
-# Rolle ändern
+# Change the role
 {:ok, _updated_user} = user |> Ecto.Changeset.change(role: :admin) |> Repo.update()
 ```
 

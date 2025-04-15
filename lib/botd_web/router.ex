@@ -57,6 +57,25 @@ defmodule BotdWeb.Router do
     delete "/people/:id", PersonController, :delete
   end
 
+  # Member routes - only authenticated users
+  scope "/suggestions", BotdWeb do
+    pipe_through [:browser, :protected]
+
+    get "/new", SuggestionController, :new
+    post "/", SuggestionController, :create
+    get "/my", SuggestionController, :my_suggestions
+  end
+
+  # Moderator routes - for reviewing suggestions
+  scope "/protected", BotdWeb do
+    pipe_through :moderator
+
+    get "/suggestions", SuggestionController, :index
+    get "/suggestions/:id", SuggestionController, :show
+    post "/suggestions/:id/approve", SuggestionController, :approve
+    post "/suggestions/:id/reject", SuggestionController, :reject
+  end
+
   # Admin-only routes
   scope "/admin", BotdWeb do
     pipe_through :admin

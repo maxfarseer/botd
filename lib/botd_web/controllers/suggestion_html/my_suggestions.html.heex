@@ -1,0 +1,85 @@
+<div class="mx-auto max-w-3xl">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">My Suggestions</h1>
+    <.link href={~p"/suggestions/new"} class="button">
+      New Suggestion
+    </.link>
+  </div>
+
+  <%= if Enum.empty?(@suggestions) do %>
+    <div class="bg-white shadow rounded-lg p-6 text-center">
+      <p class="text-gray-500">You haven't made any suggestions yet.</p>
+      <.link
+        href={~p"/suggestions/new"}
+        class="mt-4 inline-block text-blue-600 hover:text-blue-800"
+      >
+        Create your first suggestion
+      </.link>
+    </div>
+  <% else %>
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Name
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Death Date
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Place
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Status
+            </th>
+            <th
+              scope="col"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              Submitted
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <%= for suggestion <- @suggestions do %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {suggestion.name}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {Calendar.strftime(suggestion.death_date, "%d %b %Y")}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {suggestion.place}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span class={[
+                  "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
+                  status_color(suggestion.status)
+                ]}>
+                  {String.capitalize(to_string(suggestion.status))}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {Calendar.strftime(suggestion.inserted_at, "%d %b %Y")}
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

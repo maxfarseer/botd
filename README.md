@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/maxfarseer/botd.svg?style=shield)](https://circleci.com/gh/maxfarseer/botd)
+
 # Book of the dead
 
 To start your Phoenix server:

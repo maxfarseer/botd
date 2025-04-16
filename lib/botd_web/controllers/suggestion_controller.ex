@@ -55,25 +55,24 @@ defmodule BotdWeb.SuggestionController do
       {:error, _} ->
         conn
         |> put_flash(:error, "Something went wrong.")
-        |> redirect(to: ~p"/suggestions/#{suggestion}")
+        |> redirect(to: ~p"/protected/suggestions/#{suggestion}")
     end
   end
 
-  # Für Moderatoren - Vorschläge ablehnen
-  def reject(conn, %{"id" => id, "suggestion" => %{"notes" => notes}}) do
-    suggestion = Suggestions.get_suggestion!(id)
-    reviewer = Pow.Plug.current_user(conn)
+  def reject(conn, %{"id" => id, "notes" => notes}) do
+    suggestion = IO.inspect(Suggestions.get_suggestion!(id))
+    reviewer = IO.inspect(Pow.Plug.current_user(conn))
 
     case Suggestions.reject_suggestion(suggestion, reviewer, notes) do
       {:ok, _suggestion} ->
         conn
         |> put_flash(:info, "Suggestion rejected.")
-        |> redirect(to: ~p"/suggestions")
+        |> redirect(to: ~p"/protected/suggestions")
 
       {:error, _} ->
         conn
         |> put_flash(:error, "Something went wrong.")
-        |> redirect(to: ~p"/suggestions/#{suggestion}")
+        |> redirect(to: ~p"/protected/suggestions/#{suggestion}")
     end
   end
 end

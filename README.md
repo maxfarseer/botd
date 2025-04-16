@@ -26,7 +26,15 @@ mix clean
 mix compile
 ```
 
-## Ecto update user to :admin
+## Ecto
+
+### How to run migrations?
+
+```
+mix ecto.migrate
+```
+
+### How to update user to :admin?
 
 In the terminal `iex -S mix`
 

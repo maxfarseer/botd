@@ -1,8 +1,8 @@
 defmodule Botd.Suggestions do
   import Ecto.Query
+  alias Botd.People
   alias Botd.Repo
   alias Botd.Suggestions.Suggestion
-  alias Botd.People
 
   def create_suggestion(attrs, user) do
     attrs = Map.put(attrs, "user_id", user.id)

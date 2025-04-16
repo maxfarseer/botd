@@ -60,8 +60,8 @@ defmodule BotdWeb.SuggestionController do
   end
 
   def reject(conn, %{"id" => id, "notes" => notes}) do
-    suggestion = IO.inspect(Suggestions.get_suggestion!(id))
-    reviewer = IO.inspect(Pow.Plug.current_user(conn))
+    suggestion = Suggestions.get_suggestion!(id)
+    reviewer = Pow.Plug.current_user(conn)
 
     case Suggestions.reject_suggestion(suggestion, reviewer, notes) do
       {:ok, _suggestion} ->

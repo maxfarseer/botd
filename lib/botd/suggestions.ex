@@ -1,4 +1,15 @@
 defmodule Botd.Suggestions do
+  @moduledoc """
+  The Suggestions context.
+
+  This module provides functions for managing user-submitted suggestions
+  for new people to add to the Book of the Dead. It handles the entire
+  suggestion lifecycle including creation, listing, approval, and rejection.
+
+  Suggestions go through a moderation workflow where admins and moderators
+  can approve or reject submissions from regular users.
+  """
+
   import Ecto.Query
   alias Botd.People
   alias Botd.Repo

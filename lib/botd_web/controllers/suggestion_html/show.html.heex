@@ -1,0 +1,99 @@
+<div class="mx-auto max-w-3xl">
+  <div class="mb-6">
+    <.link href={~p"/protected/suggestions"} class="text-sm text-gray-600 hover:text-gray-900">
+      &larr; Back to suggestions
+    </.link>
+  </div>
+
+  <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h1 class="text-xl font-semibold">Suggestion Review</h1>
+    </div>
+
+    <div class="p-6 grid grid-cols-1 gap-y-4">
+      <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Name</div>
+        <div class="col-span-2 text-sm text-gray-900">{@suggestion.name}</div>
+      </div>
+
+      <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Death Date</div>
+        <div class="col-span-2 text-sm text-gray-900">
+          {Calendar.strftime(@suggestion.death_date, "%d %b %Y")}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Place</div>
+        <div class="col-span-2 text-sm text-gray-900">{@suggestion.place}</div>
+      </div>
+
+      <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Suggested By</div>
+        <div class="col-span-2 text-sm text-gray-900">{@suggestion.user.email}</div>
+      </div>
+
+      <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Submitted On</div>
+        <div class="col-span-2 text-sm text-gray-900">
+          {Calendar.strftime(@suggestion.inserted_at, "%d %b %Y at %H:%M")}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Status</div>
+        <div class="col-span-2">
+          <span class={[
+            "px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+          ]}>
+            {String.capitalize(to_string(@suggestion.status))}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%= if @suggestion.status == :pending do %>
+    <div class="flex gap-4">
+      <.form
+        :let={_}
+        for={%{}}
+        action={~p"/protected/suggestions/#{@suggestion.id}/approve"}
+        method="post"
+        class="w-1/2"
+      >
+        <.button class="w-full bg-green-600 hover:bg-green-700">
+          Approve Suggestion
+        </.button>
+      </.form>
+
+      <.form
+        :let={f}
+        for={%{}}
+        action={~p"/protected/suggestions/#{@suggestion.id}/reject"}
+        method="post"
+        class="w-1/2"
+      >
+        <div class="mb-4">
+          <.input
+            field={f[:notes]}
+            type="textarea"
+            label="Rejection Reason"
+            required
+            placeholder="Please provide a reason for rejection..."
+          />
+        </div>
+        <.button class="w-full bg-red-600 hover:bg-red-700">
+          Reject Suggestion
+        </.button>
+      </.form>
+    </div>
+  <% end %>
+
+  <%= if @suggestion.status == :rejected && @suggestion.notes do %>
+    <div class="bg-white shadow rounded-lg p-6 mt-6">
+      <h2 class="text-lg font-medium mb-2">Rejection Reason</h2>
+      <p class="text-gray-700">{@suggestion.notes}</p>
+    </div>
+  <% end %>
+</div>

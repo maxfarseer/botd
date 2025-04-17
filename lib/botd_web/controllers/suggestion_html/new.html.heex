@@ -1,0 +1,23 @@
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-bold mb-6">Suggest a New Person</h1>
+
+  <.simple_form :let={f} for={@changeset} action={~p"/suggestions"}>
+    <.error :if={@changeset.action}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+
+    <.input field={f[:name]} type="text" label="Name" required />
+    <.input field={f[:death_date]} type="date" label="Death Date" required />
+    <.input field={f[:place]} type="text" label="Place" required />
+
+    <:actions>
+      <.button class="w-full">Submit Suggestion</.button>
+    </:actions>
+  </.simple_form>
+
+  <div class="mt-4 text-center">
+    <.link href={~p"/people"} class="text-sm text-gray-600 hover:text-gray-900">
+      &larr; Back to people
+    </.link>
+  </div>
+</div>

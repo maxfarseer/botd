@@ -3,7 +3,6 @@ defmodule BotdWeb.SuggestionController do
   alias Botd.Suggestions
   alias Botd.Suggestions.Suggestion
 
-  # Für Members - Neue Vorschläge
   def new(conn, _params) do
     changeset = Suggestion.changeset(%Suggestion{}, %{})
     render(conn, :new, changeset: changeset)
@@ -23,14 +22,12 @@ defmodule BotdWeb.SuggestionController do
     end
   end
 
-  # Für Members - Meine Vorschläge anzeigen
   def my_suggestions(conn, _params) do
     user = Pow.Plug.current_user(conn)
     suggestions = Suggestions.list_user_suggestions(user)
     render(conn, :my_suggestions, suggestions: suggestions)
   end
 
-  # Für Moderatoren - Vorschläge prüfen
   def index(conn, _params) do
     suggestions = Suggestions.list_pending_suggestions()
     render(conn, :index, suggestions: suggestions)
@@ -41,7 +38,6 @@ defmodule BotdWeb.SuggestionController do
     render(conn, :show, suggestion: suggestion)
   end
 
-  # Für Moderatoren - Vorschläge genehmigen
   def approve(conn, %{"id" => id}) do
     suggestion = Suggestions.get_suggestion!(id)
     reviewer = Pow.Plug.current_user(conn)

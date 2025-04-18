@@ -49,6 +49,41 @@ user = Repo.get_by(User, email: "user@example.com")
 {:ok, _updated_user} = user |> Ecto.Changeset.change(role: :admin) |> Repo.update()
 ```
 
+## PostgreSQL
+
+### Commands
+
+```
+\dt                             # check tables
+\d table_name                   # check columns
+\dT+ activity_logs_entity_type  # check enum values
+```
+
+### Backup and restore local database
+
+#### Connect to the database
+
+If the database name is `botd_dev` and username is `postgres`
+
+```
+psql -d botd_dev
+```
+
+#### How to Backup
+
+```
+pg_dump -U postgres -h localhost -p 5432 botd_dev > backup.sql
+
+```
+
+#### How to restore
+
+```
+dropdb -U postgres botd_dev
+createdb -U postgres botd_dev
+psql -U postgres -d botd_dev < backup.sql
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

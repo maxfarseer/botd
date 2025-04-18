@@ -34,6 +34,14 @@ mix compile
 mix ecto.migrate
 ```
 
+### Rollback one migration
+
+```
+mix ecto.rollback
+```
+
+or with -n option for many
+
 ### How to update user to :admin?
 
 In the terminal `iex -S mix`

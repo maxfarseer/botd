@@ -13,11 +13,13 @@ defmodule Botd.ActivityLogs.ActivityLog do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @entity_types [:person, :suggestion]
+
   schema "activity_logs" do
     field :action, :string
     field :entity_id, :integer
     field :user_id, :integer
-    field :entity_type, :string
+    field :entity_type, Ecto.Enum, values: @entity_types
 
     timestamps()
   end
@@ -26,5 +28,6 @@ defmodule Botd.ActivityLogs.ActivityLog do
     activity_log
     |> cast(attrs, [:action, :entity_type, :entity_id, :entity_name, :user_id, :user_email])
     |> validate_required([:action, :entity_type, :entity_id, :entity_name])
+    |> validate_inclusion(:entity_type, @entity_types)
   end
 end

@@ -14,12 +14,10 @@ defmodule Botd.ActivityLogs.ActivityLog do
   import Ecto.Changeset
 
   schema "activity_logs" do
-    field :action, Ecto.Enum, values: [:create, :edit, :remove]
-    field :entity_type, :string
+    field :action, :string
     field :entity_id, :integer
-    field :entity_name, :string
     field :user_id, :integer
-    field :user_email, :string
+    field :entity_type, :string
 
     timestamps()
   end

@@ -34,6 +34,14 @@ mix compile
 mix ecto.migrate
 ```
 
+### Rollback one migration
+
+```
+mix ecto.rollback
+```
+
+or with -n option for many
+
 ### How to update user to :admin?
 
 In the terminal `iex -S mix`
@@ -47,6 +55,41 @@ user = Repo.get_by(User, email: "user@example.com")
 
 # Change the role
 {:ok, _updated_user} = user |> Ecto.Changeset.change(role: :admin) |> Repo.update()
+```
+
+## PostgreSQL
+
+### Commands
+
+```
+\dt                             # check tables
+\d table_name                   # check columns
+\dT+ activity_logs_entity_type  # check enum values
+```
+
+### Backup and restore local database
+
+#### Connect to the database
+
+If the database name is `botd_dev` and username is `postgres`
+
+```
+psql -d botd_dev
+```
+
+#### How to Backup
+
+```
+pg_dump -U postgres -h localhost -p 5432 botd_dev > backup.sql
+
+```
+
+#### How to restore
+
+```
+dropdb -U postgres botd_dev
+createdb -U postgres botd_dev
+psql -U postgres -d botd_dev < backup.sql
 ```
 
 ## Learn more

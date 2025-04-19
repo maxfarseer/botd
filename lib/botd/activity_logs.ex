@@ -37,17 +37,31 @@ defmodule Botd.ActivityLogs do
     |> Repo.insert()
   end
 
-  def log_person_action(action, person, user) when action in [:create, :edit, :remove] do
-    user_info = if user, do: %{user_id: user.id, user_email: user.email}, else: %{}
-
+  def log_person_action(action, person, user)
+      when action in [:create_person, :create_person_via_suggestion, :edit_person, :remove_person] do
     attrs =
       %{
         action: action,
         entity_type: "person",
         entity_id: person.id,
-        entity_name: person.name
+        user_id: user.id
       }
-      |> Map.merge(user_info)
+
+    create_activity_log(attrs)
+  end
+
+  # Question to Samu: can I have suggestion type somehow? if i type suggestion. -> it should suggest me user autocomplete
+  def log_suggestion_action(action, suggestion)
+      when action in [:approve_suggestion, :reject_suggestion] do
+    user = suggestion.user
+
+    attrs =
+      %{
+        action: action,
+        entity_type: "suggestion",
+        entity_id: suggestion.id,
+        user_id: user.id
+      }
 
     create_activity_log(attrs)
   end

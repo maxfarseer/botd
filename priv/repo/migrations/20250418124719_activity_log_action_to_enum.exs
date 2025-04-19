@@ -1,18 +1,6 @@
 defmodule Botd.Repo.Migrations.ActivityLogActionToEnum do
   use Ecto.Migration
 
-  # @actions [
-  #   :create_person,
-  #   :create_person_via_suggestion,
-  #   :edit_person,
-  #   :remove_person,
-  #   :create_suggestion,
-  #   :edit_suggestion,
-  #   :remove_suggestion,
-  #   :approve_suggestion,
-  #   :reject_suggestion
-  # ]
-
   def up do
     # make new enum
     execute """

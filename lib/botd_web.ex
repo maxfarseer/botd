@@ -45,6 +45,7 @@ defmodule BotdWeb do
       use Gettext, backend: BotdWeb.Gettext
 
       import Plug.Conn
+      import BotdWeb.ControllerHelpers
 
       unquote(verified_routes())
     end

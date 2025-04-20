@@ -19,19 +19,19 @@ defmodule BotdWeb.PersonController do
 
     with {:ok, person} <- People.create_person(person_params),
          {:ok, _log} <- ActivityLogs.log_person_action(:create_person, person, user) do
-      # Success path
       conn
       |> put_flash(:info, "Person created successfully.")
       |> redirect(to: ~p"/people/#{person}")
     else
-      # Error paths
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
-
-      {:error, _log_error} ->
         conn
-        |> put_flash(:error, "Person was created but logging failed.")
-        |> render(:new, changeset: People.change_person(%Person{}))
+        |> put_flash(:error, inspect_errors(changeset))
+        |> redirect(to: ~p"/people/")
+
+      {:error, _any_error} ->
+        conn
+        |> put_flash(:error, "Person: Something went wrong.")
+        |> redirect(to: ~p"/people/")
     end
   end
 
@@ -48,30 +48,47 @@ defmodule BotdWeb.PersonController do
 
   def update(conn, %{"id" => id, "person" => person_params}) do
     person = People.get_person!(id)
+    user = conn.assigns[:current_user]
 
-    case People.update_person(person, person_params) do
-      {:ok, person} ->
-        user = conn.assigns[:current_user]
-        ActivityLogs.log_person_action(:edit_person, person, user)
-
+    with {:ok, updated_person} <- People.update_person(person, person_params),
+         {:ok, _log} <- ActivityLogs.log_person_action(:edit_person, updated_person, user) do
+      conn
+      |> put_flash(:info, "Person updated successfully.")
+      |> redirect(to: ~p"/people/#{updated_person}")
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_flash(:info, "Person updated successfully.")
+        |> put_flash(:error, inspect_errors(changeset))
         |> redirect(to: ~p"/people/#{person}")
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, person: person, changeset: changeset)
+      {:error, _any_error} ->
+        conn
+        |> put_flash(:error, "Person: Something went wrong.")
+        |> redirect(to: ~p"/people/#{person}")
     end
   end
 
   def delete(conn, %{"id" => id}) do
     person = People.get_person!(id)
-    {:ok, _person} = People.delete_person(person)
 
     user = conn.assigns[:current_user]
     ActivityLogs.log_person_action(:remove_person, person, user)
 
-    conn
-    |> put_flash(:info, "Person deleted successfully.")
-    |> redirect(to: ~p"/people")
+    with {:ok, _person} <- People.delete_person(person),
+         {:ok, _log} <- ActivityLogs.log_person_action(:remove_person, person, user) do
+      conn
+      |> put_flash(:info, "Person deleted successfully.")
+      |> redirect(to: ~p"/people")
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_flash(:error, inspect_errors(changeset))
+        |> redirect(to: ~p"/people")
+
+      {:error, _any_error} ->
+        conn
+        |> put_flash(:error, "Person: Something went wrong.")
+        |> redirect(to: ~p"/people")
+    end
   end
 end

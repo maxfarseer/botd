@@ -70,7 +70,6 @@ defmodule BotdWeb.PersonController do
 
   def delete(conn, %{"id" => id}) do
     person = People.get_person!(id)
-    {:ok, _person} = People.delete_person(person)
 
     user = conn.assigns[:current_user]
     ActivityLogs.log_person_action(:remove_person, person, user)
@@ -84,7 +83,7 @@ defmodule BotdWeb.PersonController do
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_flash(:error, inspect_errors(changeset))
-        |> redirect(to: ~p"/people/#{person}")
+        |> redirect(to: ~p"/people")
 
       {:error, _any_error} ->
         conn

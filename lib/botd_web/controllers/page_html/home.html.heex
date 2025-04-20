@@ -33,15 +33,25 @@
     >
       <.icon name="hero-book-open" class="w-6 h-6 mr-2" /> Read the book
     </.link>
-    
-<!-- Admin link for logged in users -->
+
     <%= if admin?(@conn) do %>
       <div class="mt-4">
         <.link
           href={~p"/admin/logs"}
           class="text-gray-400 hover:text-amber-400 transition-colors duration-300"
         >
-          <.icon name="hero-clock" class="w-4 h-4 inline mr-1" /> Activity Logs
+          <.icon name="hero-clock" class="w-4 h-4 inline mr-1" />Activity Logs
+        </.link>
+      </div>
+    <% end %>
+
+    <%= if moderator_or_admin?(@conn) do %>
+      <div class="mt-4">
+        <.link
+          href={~p"/protected/suggestions"}
+          class="text-gray-400 hover:text-amber-400 transition-colors duration-300"
+        >
+          <.icon name="hero-clipboard-document-list" class="w-4 h-4 inline mr-1" />Suggestions
         </.link>
       </div>
     <% end %>

@@ -13,20 +13,33 @@ defmodule Botd.ActivityLogs.ActivityLog do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @actions [
+    :create_person,
+    :create_person_via_suggestion,
+    :edit_person,
+    :remove_person,
+    :create_suggestion,
+    :edit_suggestion,
+    :remove_suggestion,
+    :approve_suggestion,
+    :reject_suggestion
+  ]
+  @entity_types [:person, :suggestion]
+
   schema "activity_logs" do
-    field :action, Ecto.Enum, values: [:create, :edit, :remove]
-    field :entity_type, :string
+    field :action, Ecto.Enum, values: @actions
     field :entity_id, :integer
-    field :entity_name, :string
+    field :entity_type, Ecto.Enum, values: @entity_types
     field :user_id, :integer
-    field :user_email, :string
 
     timestamps()
   end
 
   def changeset(activity_log, attrs) do
     activity_log
-    |> cast(attrs, [:action, :entity_type, :entity_id, :entity_name, :user_id, :user_email])
-    |> validate_required([:action, :entity_type, :entity_id, :entity_name])
+    |> cast(attrs, [:action, :entity_id, :entity_type, :user_id])
+    |> validate_required([:action, :entity_type, :entity_id, :user_id])
+    |> validate_inclusion(:entity_type, @entity_types)
+    |> validate_inclusion(:action, @actions)
   end
 end

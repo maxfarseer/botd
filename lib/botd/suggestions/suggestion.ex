@@ -6,11 +6,6 @@ defmodule Botd.Suggestions.Suggestion do
   for new people to be added to the Book of the Dead. It includes fields
   for the suggested person's information, the status of the suggestion,
   and tracking of who submitted and reviewed it.
-
-  Suggestions can have one of three statuses:
-  - pending: awaiting moderator review
-  - approved: accepted and converted to a person record
-  - rejected: declined by a moderator with optional notes
   """
 
   use Ecto.Schema

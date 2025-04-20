@@ -50,7 +50,8 @@ defmodule Botd.ActivityLogs do
     create_activity_log(attrs)
   end
 
-  # Question to Samu: can I have suggestion type somehow? if i type suggestion. -> it should suggest me user autocomplete
+  # Question to Samu: can I have suggestion type somehow?
+  # if i type suggestion. -> it should suggest me user autocomplete
   def log_suggestion_action(action, suggestion)
       when action in [:approve_suggestion, :reject_suggestion] do
     user = suggestion.user

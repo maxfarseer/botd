@@ -92,6 +92,66 @@ createdb -U postgres botd_dev
 psql -U postgres -d botd_dev < backup.sql
 ```
 
+## Elixir highlights
+
+### With operator
+
+[Documentation](https://hexdocs.pm/elixir/Kernel.SpecialForms.html#with/1)
+
+Helps you to decrease case -> case -> ... nesting.
+
+Example from app:
+
+Before:
+
+```elixir
+def create(conn, %{"person" => person_params}) do
+  case People.create_person(person_params) do
+    {:ok, person} ->
+      user = conn.assigns[:current_user]
+
+      case ActivityLogs.log_person_action(:create, person, user) do
+        {:ok, log} ->
+          conn
+          |> put_flash(:info, "Person created successfully.")
+          |> redirect(to: ~p"/people/#{person}")
+
+        {:error, reason} ->
+          # raise an error
+          IO.inspect(reason, label: "Error logging person creation")
+      end
+
+    {:error, %Ecto.Changeset{} = changeset} ->
+      render(conn, :new, changeset: changeset)
+  end
+end
+```
+
+After:
+
+```elixir
+def create(conn, %{"person" => person_params}) do
+  user = conn.assigns[:current_user]
+
+  with {:ok, person} <- People.create_person(person_params),
+        {:ok, _log} <- ActivityLogs.log_person_action(:create, person, user) do
+    # Success path
+    conn
+    |> put_flash(:info, "Person created successfully.")
+    |> redirect(to: ~p"/people/#{person}")
+  else
+    # Error paths
+    {:error, %Ecto.Changeset{} = changeset} ->
+      render(conn, :new, changeset: changeset)
+
+    {:error, log_error} ->
+      conn
+      |> put_flash(:error, "Person was created but logging failed.")
+      |> render(:new, changeset: People.change_person(%Person{}))
+  end
+end
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/
@@ -99,3 +159,7 @@ psql -U postgres -d botd_dev < backup.sql
 - Docs: https://hexdocs.pm/phoenix
 - Forum: https://elixirforum.com/c/phoenix-forum
 - Source: https://github.com/phoenixframework/phoenix
+
+```
+
+```

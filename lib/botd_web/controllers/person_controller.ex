@@ -15,17 +15,23 @@ defmodule BotdWeb.PersonController do
   end
 
   def create(conn, %{"person" => person_params}) do
-    case People.create_person(person_params) do
-      {:ok, person} ->
-        user = conn.assigns[:current_user]
-        ActivityLogs.log_person_action(:create, person, user)
+    user = conn.assigns[:current_user]
 
-        conn
-        |> put_flash(:info, "Person created successfully.")
-        |> redirect(to: ~p"/people/#{person}")
-
+    with {:ok, person} <- People.create_person(person_params),
+         {:ok, _log} <- ActivityLogs.log_person_action(:create_person, person, user) do
+      # Success path
+      conn
+      |> put_flash(:info, "Person created successfully.")
+      |> redirect(to: ~p"/people/#{person}")
+    else
+      # Error paths
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :new, changeset: changeset)
+
+      {:error, _log_error} ->
+        conn
+        |> put_flash(:error, "Person was created but logging failed.")
+        |> render(:new, changeset: People.change_person(%Person{}))
     end
   end
 
@@ -46,7 +52,7 @@ defmodule BotdWeb.PersonController do
     case People.update_person(person, person_params) do
       {:ok, person} ->
         user = conn.assigns[:current_user]
-        ActivityLogs.log_person_action(:edit, person, user)
+        ActivityLogs.log_person_action(:edit_person, person, user)
 
         conn
         |> put_flash(:info, "Person updated successfully.")
@@ -62,7 +68,7 @@ defmodule BotdWeb.PersonController do
     {:ok, _person} = People.delete_person(person)
 
     user = conn.assigns[:current_user]
-    ActivityLogs.log_person_action(:remove, person, user)
+    ActivityLogs.log_person_action(:remove_person, person, user)
 
     conn
     |> put_flash(:info, "Person deleted successfully.")

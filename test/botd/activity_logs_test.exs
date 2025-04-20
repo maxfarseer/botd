@@ -26,19 +26,19 @@ defmodule Botd.ActivityLogsTest do
         })
         |> Repo.insert()
 
-      # suggestion =
-      #   %Suggestion{
-      #     id: 1,
-      #     name: "Test Suggestion",
-      #     death_date: ~D[2023-01-01],
-      #     place: "Test City",
-      #     status: :pending,
-      #     user_id: user.id
-      #   }
-      #   |> Repo.insert!()
+      suggestion =
+        %Suggestion{
+          id: 1,
+          name: "Test Suggestion",
+          death_date: ~D[2023-01-01],
+          place: "Test City",
+          status: :pending,
+          user: user
+        }
+        |> Repo.insert!()
 
       # %{user: user, person: person, suggestion: suggestion}
-      %{user: user, person: person}
+      %{user: user, person: person, suggestion: suggestion}
     end
 
     test "list_activity_logs/0 returns all activity logs ordered by insertion date", %{
@@ -105,19 +105,18 @@ defmodule Botd.ActivityLogsTest do
       end
     end
 
-    # test "log_suggestion_action/3 logs actions for a suggestion", %{
-    #   user: user,
-    #   suggestion: suggestion
-    # } do
-    #   actions = [:approve_suggestion, :reject_suggestion]
+    test "log_suggestion_action/3 logs actions for a suggestion", %{
+      suggestion: suggestion
+    } do
+      actions = [:approve_suggestion, :reject_suggestion]
 
-    #   for action <- actions do
-    #     {:ok, log} = ActivityLogs.log_suggestion_action(action, suggestion)
-    #     assert log.action == action
-    #     assert log.entity_type == :suggestion
-    #     assert log.entity_id == suggestion.id
-    #     assert log.user_id == user.id
-    #   end
-    # end
+      for action <- actions do
+        {:ok, log} = ActivityLogs.log_suggestion_action(action, suggestion)
+        assert log.action == action
+        assert log.entity_type == :suggestion
+        assert log.entity_id == suggestion.id
+        assert log.user_id == suggestion.user.id
+      end
+    end
   end
 end

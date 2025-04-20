@@ -54,14 +54,12 @@ defmodule Botd.ActivityLogs do
   # if i type suggestion. -> it should suggest me user autocomplete
   def log_suggestion_action(action, suggestion)
       when action in [:approve_suggestion, :reject_suggestion] do
-    user = suggestion.user
-
     attrs =
       %{
         action: action,
         entity_type: "suggestion",
         entity_id: suggestion.id,
-        user_id: user.id
+        user_id: suggestion.reviewed_by_id
       }
 
     create_activity_log(attrs)

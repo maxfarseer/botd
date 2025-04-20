@@ -17,6 +17,14 @@ defmodule Botd.ActivityLogsTest do
         }
         |> Repo.insert!()
 
+      admin_user =
+        %User{
+          id: 2,
+          email: "admin@example.com",
+          role: :admin
+        }
+        |> Repo.insert!()
+
       {:ok, person} =
         %Person{}
         |> Person.changeset(%{
@@ -33,12 +41,13 @@ defmodule Botd.ActivityLogsTest do
           death_date: ~D[2023-01-01],
           place: "Test City",
           status: :pending,
-          user: user
+          user: user,
+          reviewed_by_id: admin_user.id
         }
         |> Repo.insert!()
 
       # %{user: user, person: person, suggestion: suggestion}
-      %{user: user, person: person, suggestion: suggestion}
+      %{user: user, person: person, suggestion: suggestion, admin_user: admin_user}
     end
 
     test "list_activity_logs/0 returns all activity logs ordered by insertion date", %{
@@ -105,8 +114,9 @@ defmodule Botd.ActivityLogsTest do
       end
     end
 
-    test "log_suggestion_action/3 logs actions for a suggestion", %{
-      suggestion: suggestion
+    test "log_suggestion_action/2 logs actions for a suggestion", %{
+      suggestion: suggestion,
+      admin_user: admin_user
     } do
       actions = [:approve_suggestion, :reject_suggestion]
 
@@ -115,7 +125,7 @@ defmodule Botd.ActivityLogsTest do
         assert log.action == action
         assert log.entity_type == :suggestion
         assert log.entity_id == suggestion.id
-        assert log.user_id == suggestion.user.id
+        assert log.user_id == admin_user.id
       end
     end
   end

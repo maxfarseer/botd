@@ -1,5 +1,6 @@
 defmodule BotdWeb.SuggestionController do
   use BotdWeb, :controller
+  alias Botd.ActivityLogs
   alias Botd.Suggestions
   alias Botd.Suggestions.Suggestion
 
@@ -43,7 +44,18 @@ defmodule BotdWeb.SuggestionController do
     reviewer = Pow.Plug.current_user(conn)
 
     case Suggestions.approve_suggestion(suggestion, reviewer) do
-      {:ok, {_suggestion, person}} ->
+      {:ok, {approved_suggestion, person}} ->
+        ActivityLogs.log_suggestion_action(
+          :approve_suggestion,
+          approved_suggestion
+        )
+
+        ActivityLogs.log_person_action(
+          :create_person_via_suggestion,
+          person,
+          approved_suggestion.user
+        )
+
         conn
         |> put_flash(:info, "Suggestion approved and person added to database.")
         |> redirect(to: ~p"/people/#{person}")
@@ -60,7 +72,12 @@ defmodule BotdWeb.SuggestionController do
     reviewer = Pow.Plug.current_user(conn)
 
     case Suggestions.reject_suggestion(suggestion, reviewer, notes) do
-      {:ok, _suggestion} ->
+      {:ok, rejected_suggestion} ->
+        ActivityLogs.log_suggestion_action(
+          :reject_suggestion,
+          rejected_suggestion
+        )
+
         conn
         |> put_flash(:info, "Suggestion rejected.")
         |> redirect(to: ~p"/protected/suggestions")

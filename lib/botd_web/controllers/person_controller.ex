@@ -30,7 +30,7 @@ defmodule BotdWeb.PersonController do
 
       {:error, _any_error} ->
         conn
-        |> put_flash(:error, "Person was created but with some errors.")
+        |> put_flash(:error, "Person: Something went wrong.")
         |> redirect(to: ~p"/people/")
     end
   end
@@ -63,7 +63,7 @@ defmodule BotdWeb.PersonController do
 
       {:error, _any_error} ->
         conn
-        |> put_flash(:error, "Person was updated but with some errors.")
+        |> put_flash(:error, "Person: Something went wrong.")
         |> redirect(to: ~p"/people/#{person}")
     end
   end
@@ -75,8 +75,21 @@ defmodule BotdWeb.PersonController do
     user = conn.assigns[:current_user]
     ActivityLogs.log_person_action(:remove_person, person, user)
 
-    conn
-    |> put_flash(:info, "Person deleted successfully.")
-    |> redirect(to: ~p"/people")
+    with {:ok, _person} <- People.delete_person(person),
+         {:ok, _log} <- ActivityLogs.log_person_action(:remove_person, person, user) do
+      conn
+      |> put_flash(:info, "Person deleted successfully.")
+      |> redirect(to: ~p"/people")
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_flash(:error, inspect_errors(changeset))
+        |> redirect(to: ~p"/people/#{person}")
+
+      {:error, _any_error} ->
+        conn
+        |> put_flash(:error, "Person: Something went wrong.")
+        |> redirect(to: ~p"/people")
+    end
   end
 end

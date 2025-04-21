@@ -38,29 +38,28 @@ defmodule BotdWeb.SuggestionControllerTest do
     {:ok, suggestion} =
       Suggestions.create_suggestion(
         %{
-          name: "Test Person",
-          death_date: ~D[2023-01-01],
-          place: "Test City"
+          "name" => "Test Person",
+          "death_date" => ~D[2023-01-01],
+          "place" => "Test City"
         },
         member_user
       )
 
-    # Valid suggestion params for tests
     valid_attrs = %{
-      suggestion: %{
-        name: "New Test Person",
-        death_date: "2023-02-02",
-        place: "New Test City"
+      "suggestion" => %{
+        "name" => "New Test Person",
+        "death_date" => "2023-02-02",
+        "place" => "New Test City"
       }
     }
 
     # Invalid suggestion params for tests
     invalid_attrs = %{
-      suggestion => %{
+      "suggestion" => %{
         # Name is required
-        name: "",
-        death_date: "invalid-date",
-        place: "New Test City"
+        "name" => "",
+        "death_date" => "invalid-date",
+        "place" => "New Test City"
       }
     }
 

@@ -90,26 +90,24 @@ defmodule BotdWeb.SuggestionControllerTest do
   end
 
   describe "create" do
-    # test "creates suggestion when data is valid", %{
-    #   conn: conn,
-    #   member: member,
-    #   valid_attrs: valid_attrs
-    # } do
-    #   conn =
-    #     conn
-    #     |> Pow.Plug.assign_current_user(member, otp_app: :botd)
-    #     |> post(~p"/suggestions", valid_attrs)
+    test "redirect after creating suggestion", %{
+      conn: conn,
+      member: member,
+      valid_attrs: valid_attrs
+    } do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> post(~p"/suggestions", valid_attrs)
 
-    #   IO.inspect(conn, label: "conn")
+      assert redirected_to(conn) =~ "/suggestions/my"
 
-    #   assert %{to: path} = redirected_to(conn)
-    #   assert path == "/suggestions/my"
-
-    #   # Check suggestion was created
-    #   [suggestion | _] = Suggestions.list_user_suggestions(member)
-    #   assert suggestion.name == valid_attrs["suggestion"].name
-    #   assert suggestion.place == valid_attrs["suggestion"].place
-    # end
+      #   # Check suggestion was created
+      #   [suggestion | _] = Suggestions.list_user_suggestions(member)
+      #   assert suggestion.name == valid_attrs["suggestion"].name
+      #   assert suggestion.place == valid_attrs["suggestion"].place
+      # end
+    end
 
     # test "renders errors when data is invalid", %{
     #   conn: conn,
@@ -125,10 +123,10 @@ defmodule BotdWeb.SuggestionControllerTest do
     #   assert html_response(conn, 200) =~ "can't be blank"
     # end
 
-    # test "redirects if not logged in", %{conn: conn, valid_attrs: valid_attrs} do
-    #   conn = post(conn, ~p"/suggestions", valid_attrs)
-    #   assert redirected_to(conn) =~ "/session/new"
-    # end
+    test "redirects if not logged in", %{conn: conn, valid_attrs: valid_attrs} do
+      conn = post(conn, ~p"/suggestions", valid_attrs)
+      assert redirected_to(conn) =~ "/session/new"
+    end
   end
 
   describe "my_suggestions" do

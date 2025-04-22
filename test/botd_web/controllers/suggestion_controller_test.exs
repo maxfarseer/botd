@@ -1,12 +1,12 @@
 defmodule BotdWeb.SuggestionControllerTest do
   use BotdWeb.ConnCase
 
+  alias Botd.Repo
   alias Botd.Suggestions
+  alias Botd.Users.User
   # alias Botd.Suggestions.Suggestion
   # alias Botd.People
   # alias Botd.ActivityLogs
-  alias Botd.Users.User
-  alias Botd.Repo
 
   setup do
     # Create users with different roles
@@ -187,8 +187,7 @@ defmodule BotdWeb.SuggestionControllerTest do
         |> get(~p"/protected/suggestions")
 
       assert redirected_to(conn) == "/"
-      # TODO:max deprecated, use Phoenix.Flash.get
-      assert get_flash(conn, :error) =~ "don't have permission"
+      assert flash_no_permissions?(conn)
     end
 
     test "redirects if not logged in", %{conn: conn} do
@@ -235,7 +234,7 @@ defmodule BotdWeb.SuggestionControllerTest do
         |> get(~p"/protected/suggestions/#{suggestion}")
 
       assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) =~ "don't have permission"
+      assert flash_no_permissions?(conn)
     end
   end
 
@@ -281,7 +280,7 @@ defmodule BotdWeb.SuggestionControllerTest do
         |> post(~p"/protected/suggestions/#{suggestion}/approve")
 
       assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) =~ "don't have permission"
+      assert flash_no_permissions?(conn)
 
       # Verify suggestion status was not changed
       updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
@@ -321,7 +320,7 @@ defmodule BotdWeb.SuggestionControllerTest do
         |> post(~p"/protected/suggestions/#{suggestion}/reject", %{"notes" => "Not suitable"})
 
       assert redirected_to(conn) == "/"
-      assert get_flash(conn, :error) =~ "don't have permission"
+      assert flash_no_permissions?(conn)
 
       # Verify suggestion status was not changed
       updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
@@ -336,4 +335,12 @@ defmodule BotdWeb.SuggestionControllerTest do
   #   # Replace with actual mocking if needed
   #   :ok
   # end
+  defp flash_contains?(conn, key, value) do
+    flash = conn.assigns.flash
+    flash && Phoenix.Flash.get(flash, key) =~ value
+  end
+
+  defp flash_no_permissions?(conn) do
+    flash_contains?(conn, :error, "don't have permission")
+  end
 end

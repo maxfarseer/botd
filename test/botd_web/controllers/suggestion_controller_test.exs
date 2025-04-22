@@ -114,19 +114,19 @@ defmodule BotdWeb.SuggestionControllerTest do
                Date.from_iso8601!(valid_attrs["suggestion"]["death_date"])
     end
 
-    # test "renders errors when data is invalid", %{
-    #   conn: conn,
-    #   member: member,
-    #   invalid_attrs: invalid_attrs
-    # } do
-    #   conn =
-    #     conn
-    #     |> Pow.Plug.assign_current_user(member, otp_app: :botd)
-    #     |> post(~p"/suggestions", invalid_attrs)
+    test "renders errors when data is invalid", %{
+      conn: conn,
+      member: member,
+      invalid_attrs: invalid_attrs
+    } do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> post(~p"/suggestions", invalid_attrs)
 
-    #   assert html_response(conn, 200) =~ "New Suggestion"
-    #   assert html_response(conn, 200) =~ "can't be blank"
-    # end
+      assert html_response(conn, 200) =~ "Suggest a New Person"
+      assert html_response(conn, 200) =~ "can&#39;t be blank"
+    end
 
     test "redirects if not logged in", %{conn: conn, valid_attrs: valid_attrs} do
       conn = post(conn, ~p"/suggestions", valid_attrs)

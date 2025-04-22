@@ -95,6 +95,8 @@ defmodule BotdWeb.SuggestionControllerTest do
       member: member,
       valid_attrs: valid_attrs
     } do
+      suggestions_before = Suggestions.list_user_suggestions(member)
+
       conn =
         conn
         |> Pow.Plug.assign_current_user(member, otp_app: :botd)
@@ -102,11 +104,14 @@ defmodule BotdWeb.SuggestionControllerTest do
 
       assert redirected_to(conn) =~ "/suggestions/my"
 
-      #   # Check suggestion was created
-      #   [suggestion | _] = Suggestions.list_user_suggestions(member)
-      #   assert suggestion.name == valid_attrs["suggestion"].name
-      #   assert suggestion.place == valid_attrs["suggestion"].place
-      # end
+      suggestions_after = Suggestions.list_user_suggestions(member)
+      [new_suggestion] = suggestions_after -- suggestions_before
+
+      assert new_suggestion.name == valid_attrs["suggestion"]["name"]
+      assert new_suggestion.place == valid_attrs["suggestion"]["place"]
+
+      assert new_suggestion.death_date ==
+               Date.from_iso8601!(valid_attrs["suggestion"]["death_date"])
     end
 
     # test "renders errors when data is invalid", %{

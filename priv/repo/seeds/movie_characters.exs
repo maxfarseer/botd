@@ -64,7 +64,7 @@ defmodule Botd.Seeds.MovieCharacters do
     case People.create_person(person_attrs) do
       {:ok, person} = result ->
         # Log the creation action
-        ActivityLogs.log_person_action(:create, person, user)
+        ActivityLogs.log_person_action(:create_person, person, user)
         IO.puts("Added person: #{person.name} (with activity log)")
         result
 

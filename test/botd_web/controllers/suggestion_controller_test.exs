@@ -4,7 +4,6 @@ defmodule BotdWeb.SuggestionControllerTest do
   alias Botd.People
   alias Botd.Repo
   alias Botd.Suggestions
-  alias Botd.Suggestions.Suggestion
   alias Botd.Users.User
 
   setup do

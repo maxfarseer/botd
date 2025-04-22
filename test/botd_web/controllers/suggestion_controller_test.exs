@@ -1,12 +1,11 @@
 defmodule BotdWeb.SuggestionControllerTest do
   use BotdWeb.ConnCase
 
+  alias Botd.People
   alias Botd.Repo
   alias Botd.Suggestions
+  alias Botd.Suggestions.Suggestion
   alias Botd.Users.User
-  # alias Botd.Suggestions.Suggestion
-  # alias Botd.People
-  # alias Botd.ActivityLogs
 
   setup do
     # Create users with different roles
@@ -239,35 +238,30 @@ defmodule BotdWeb.SuggestionControllerTest do
   end
 
   describe "approve" do
-    # test "approves suggestion and creates person for admin", %{
-    #   conn: conn,
-    #   admin: admin,
-    #   suggestion: suggestion
-    # } do
-    #   # Mock the ActivityLogs functions to avoid errors
-    #   expect(ActivityLogs, :log_suggestion_action, fn _, _ -> {:ok, %{}} end)
-    #   expect(ActivityLogs, :log_person_action, fn _, _, _ -> {:ok, %{}} end)
+    test "approves suggestion and creates person for admin", %{
+      conn: conn,
+      admin: admin,
+      suggestion: suggestion
+    } do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> post(~p"/protected/suggestions/#{suggestion}/approve")
 
-    #   conn =
-    #     conn
-    #     |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
-    #     |> post(~p"/protected/suggestions/#{suggestion}/approve")
+      # Verify person was created in database
+      [person] = People.list_people()
+      assert person.name == suggestion.name
+      assert person.death_date == suggestion.death_date
+      assert person.place == suggestion.place
 
-    #   # Verify person was created in database
-    #   [person] = People.list_people()
-    #   assert person.name == suggestion.name
-    #   assert person.death_date == suggestion.death_date
-    #   assert person.place == suggestion.place
+      # Verify suggestion status was updated
+      updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
+      assert updated_suggestion.status == :approved
+      assert updated_suggestion.reviewed_by_id == admin.id
 
-    #   # Verify suggestion status was updated
-    #   updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
-    #   assert updated_suggestion.status == :approved
-    #   assert updated_suggestion.reviewed_by_id == admin.id
-
-    #   # Verify redirect
-    #   assert redirected_to(conn) =~ "/people/#{person.id}"
-    #   assert get_flash(conn, :info) =~ "approved"
-    # end
+      # Verify redirect
+      assert redirected_to(conn) =~ "/people/#{person.id}"
+    end
 
     test "restricts access for regular member", %{
       conn: conn,
@@ -289,25 +283,19 @@ defmodule BotdWeb.SuggestionControllerTest do
   end
 
   describe "reject" do
-    # test "rejects suggestion for admin", %{conn: conn, admin: admin, suggestion: suggestion} do
-    #   # Mock the ActivityLogs.log_suggestion_action function
-    #   expect(ActivityLogs, :log_suggestion_action, fn _, _ -> {:ok, %{}} end)
+    test "rejects suggestion for admin", %{conn: conn, admin: admin, suggestion: suggestion} do
+      conn =
+        conn
+        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> post(~p"/protected/suggestions/#{suggestion}/reject", %{"notes" => "Not suitable"})
 
-    #   conn =
-    #     conn
-    #     |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
-    #     |> post(~p"/protected/suggestions/#{suggestion}/reject", %{"notes" => "Not suitable"})
+      updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
+      assert updated_suggestion.status == :rejected
+      assert updated_suggestion.notes == "Not suitable"
+      assert updated_suggestion.reviewed_by_id == admin.id
 
-    #   # Verify suggestion status was updated
-    #   updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
-    #   assert updated_suggestion.status == :rejected
-    #   assert updated_suggestion.notes == "Not suitable"
-    #   assert updated_suggestion.reviewed_by_id == admin.id
-
-    #   # Verify redirect
-    #   assert redirected_to(conn) == "/protected/suggestions"
-    #   assert get_flash(conn, :info) =~ "rejected"
-    # end
+      assert redirected_to(conn) == "/protected/suggestions"
+    end
 
     test "restricts access for regular member", %{
       conn: conn,
@@ -328,13 +316,6 @@ defmodule BotdWeb.SuggestionControllerTest do
     end
   end
 
-  # Helper functions
-  # defp expect(module, function, expectation) do
-  #   # In a real test, you would use Mox or similar to mock functions
-  #   # This is just a placeholder that doesn't do anything
-  #   # Replace with actual mocking if needed
-  #   :ok
-  # end
   defp flash_contains?(conn, key, value) do
     flash = conn.assigns.flash
     flash && Phoenix.Flash.get(flash, key) =~ value

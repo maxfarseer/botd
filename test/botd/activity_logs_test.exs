@@ -50,6 +50,34 @@ defmodule Botd.ActivityLogsTest do
       %{user: user, person: person, suggestion: suggestion, admin_user: admin_user}
     end
 
+    test "list_activity_logs/1 returns paginated activity logs", %{
+      user: user,
+      person: person
+    } do
+      # Create multiple activity logs
+      _logs =
+        for _i <- 1..15 do
+          {:ok, log} = ActivityLogs.log_person_action(:create_person, person, user)
+          # Ensure logs have different timestamps
+          :timer.sleep(5)
+          log
+        end
+
+      # Test default pagination (page 1, default per_page)
+      page1 = ActivityLogs.list_activity_logs()
+      assert %{entries: logs, page_number: 1, total_pages: total_pages} = page1
+      # default per_page
+      assert length(logs) <= 10
+      assert total_pages > 1
+
+      # Test custom page and per_page
+      page2 = ActivityLogs.list_activity_logs(page: 2, per_page: 5)
+      assert %{entries: logs2, page_number: 2, total_pages: total_pages2} = page2
+      assert length(logs2) <= 5
+      # With 15 items and 5 per page
+      assert total_pages2 >= 3
+    end
+
     test "list_activity_logs/0 returns all activity logs ordered by insertion date", %{
       user: user,
       person: person
@@ -60,7 +88,7 @@ defmodule Botd.ActivityLogsTest do
       :timer.sleep(10)
       {:ok, log2} = ActivityLogs.log_person_action(:edit_person, person, user)
 
-      logs = ActivityLogs.list_activity_logs()
+      %{entries: logs} = ActivityLogs.list_activity_logs()
 
       assert length(logs) >= 2
       assert Enum.find(logs, &(&1.id == log1.id))

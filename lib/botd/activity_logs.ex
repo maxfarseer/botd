@@ -25,8 +25,14 @@ defmodule Botd.ActivityLogs do
   @doc """
   Returns a list of all activity logs, sorted by insertion date (newest first).
   """
-  def list_activity_logs do
-    Repo.all(from l in ActivityLog, order_by: [desc: l.inserted_at])
+  def list_activity_logs(opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    per_page = Keyword.get(opts, :per_page, 10)
+
+    query = from(log in ActivityLog, order_by: [desc: log.inserted_at])
+
+    # paginate comes from Scrivener
+    Repo.paginate(query, page: page, page_size: per_page)
   end
 
   def get_activity_log!(id), do: Repo.get!(ActivityLog, id)

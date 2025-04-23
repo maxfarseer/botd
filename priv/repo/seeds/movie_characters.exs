@@ -15,7 +15,7 @@ defmodule Botd.Seeds.MovieCharacters do
   """
   def seed do
     # Path to the CSV file
-    file_path = Path.join(__DIR__, "movie_characters.csv")
+    file_path = Path.join(__DIR__, "expanded_characters.csv")
 
     # Check if CSV file exists
     unless File.exists?(file_path) do

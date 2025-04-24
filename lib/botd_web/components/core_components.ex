@@ -20,8 +20,6 @@ defmodule BotdWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
 
-  import BotdWeb.PaginationComponent
-
   @doc """
   Renders a modal.
 

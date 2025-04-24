@@ -246,7 +246,8 @@ defmodule BotdWeb.SuggestionControllerTest do
         |> post(~p"/protected/suggestions/#{suggestion}/approve")
 
       # Verify person was created in database
-      [person] = People.list_people()
+      %{entries: entries} = People.list_people()
+      [person] = entries
       assert person.name == suggestion.name
       assert person.death_date == suggestion.death_date
       assert person.place == suggestion.place

@@ -34,9 +34,45 @@ defmodule Botd.PeopleTest do
       person
     end
 
-    test "list_people/0 returns all people" do
+    test "list_people/1 returns all people" do
       person = person_fixture()
-      assert People.list_people() == [person]
+      %{entries: entries} = People.list_people()
+      assert entries == [person]
+    end
+
+    test "list_people/1 returns paginated people" do
+      _people =
+        for i <- 1..15 do
+          attrs = %{@valid_attrs | name: "Person #{i}", nickname: "P#{i}"}
+          {:ok, person} = People.create_person(attrs)
+          person
+        end
+
+      # Test default pagination (page 1, default per_page)
+      page1 = People.list_people()
+      assert %{entries: entries, page_number: 1, total_pages: total_pages} = page1
+      assert length(entries) <= 10
+      assert total_pages > 1
+
+      # Test custom page and per_page
+      page2 = People.list_people(page: 2, per_page: 5)
+      assert %{entries: entries2, page_number: 2, total_pages: total_pages2} = page2
+      assert length(entries2) <= 5
+      assert total_pages2 == 3
+
+      # Make sure we get different results on different pages
+      page1_small = People.list_people(page: 1, per_page: 5)
+      page2_small = People.list_people(page: 2, per_page: 5)
+
+      page1_ids = Enum.map(page1_small.entries, & &1.id)
+      page2_ids = Enum.map(page2_small.entries, & &1.id)
+      # No person should appear on both pages
+      assert Enum.empty?(page1_ids -- (page1_ids -- page2_ids))
+
+      # Test if sort order is preserved
+      names_on_page = Enum.map(page1_small.entries, & &1.updated_at)
+      sorted_names = Enum.sort(names_on_page)
+      assert names_on_page == sorted_names
     end
 
     test "get_person!/1 returns the person with given id" do

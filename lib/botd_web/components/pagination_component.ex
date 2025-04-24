@@ -1,5 +1,5 @@
 defmodule BotdWeb.PaginationComponent do
-  @doc """
+  @moduledoc """
   Renders a pagination component with "Previous" and "Next" links.
 
   ## Examples

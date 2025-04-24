@@ -11,18 +11,9 @@
   <:col :let={log} label="When">{format_timestamp(log.inserted_at)}</:col>
 </.table>
 
-<div class="pagination">
-  <%= if @page_number > 1 do %>
-    <.link navigate={~p"/admin/logs?#{%{page: @page_number - 1, per_page: @per_page}}"}>
-      Prev
-    </.link>
-  <% end %>
-
-  <span>Page {@page_number} of {@total_pages}</span>
-
-  <%= if @page_number < @total_pages do %>
-    <.link navigate={~p"/admin/logs?#{%{page: @page_number + 1, per_page: @per_page}}"}>
-      Next
-    </.link>
-  <% end %>
-</div>
+<.pagination
+  page_number={@page_number}
+  total_pages={@total_pages}
+  per_page={@per_page}
+  path="/admin/logs"
+/>

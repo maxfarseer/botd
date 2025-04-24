@@ -29,10 +29,9 @@ defmodule Botd.ActivityLogs do
     page = Keyword.get(opts, :page, 1)
     per_page = Keyword.get(opts, :per_page, 10)
 
-    query = from(log in ActivityLog, order_by: [desc: log.inserted_at])
-
-    # paginate comes from Scrivener
-    Repo.paginate(query, page: page, page_size: per_page)
+    ActivityLog
+    |> order_by(desc: :inserted_at)
+    |> Repo.paginate(page: page, page_size: per_page)
   end
 
   def get_activity_log!(id), do: Repo.get!(ActivityLog, id)

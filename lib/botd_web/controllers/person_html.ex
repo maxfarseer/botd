@@ -2,6 +2,7 @@ defmodule BotdWeb.PersonHTML do
   use BotdWeb, :html
 
   import BotdWeb.Helpers
+  import BotdWeb.PaginationComponent
 
   embed_templates "person_html/*"
 

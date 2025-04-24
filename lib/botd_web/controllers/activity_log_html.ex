@@ -1,5 +1,6 @@
 defmodule BotdWeb.ActivityLogHTML do
   use BotdWeb, :html
+  import BotdWeb.PaginationComponent
 
   embed_templates "activity_log_html/*"
 

@@ -1,4 +1,23 @@
 defmodule BotdWeb.PaginationComponent do
+  @doc """
+  Renders a pagination component with "Previous" and "Next" links.
+
+  ## Examples
+
+      <.pagination
+        page_number={1}
+        total_pages={5}
+        per_page={10}
+        path="/people"
+      />
+
+  ## Attributes
+
+  * `page_number` - The current page number (integer)
+  * `total_pages` - The total number of pages available (integer)
+  * `per_page` - Number of items displayed per page (integer)
+  * `path` - The base path for pagination links (string)
+  """
   use Phoenix.Component
 
   attr :page_number, :integer, required: true

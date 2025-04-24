@@ -18,8 +18,13 @@ defmodule Botd.People do
   alias Botd.People.Person
   alias Botd.Repo
 
-  def list_people do
-    Repo.all(Person)
+  def list_people(opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    per_page = Keyword.get(opts, :per_page, 10)
+
+    Person
+    |> order_by(desc: :updated_at)
+    |> Repo.paginate(page: page, page_size: per_page)
   end
 
   def get_person!(id), do: Repo.get!(Person, id)

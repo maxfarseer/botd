@@ -4,9 +4,22 @@ defmodule BotdWeb.PersonController do
   alias Botd.People
   alias Botd.People.Person
 
-  def index(conn, _params) do
-    people = People.list_people()
-    render(conn, :index, people: people)
+  def index(conn, params) do
+    page = params["page"] || "1"
+    per_page = params["per_page"] || "10"
+
+    {page, _} = Integer.parse(page)
+    {per_page, _} = Integer.parse(per_page)
+
+    %{entries: people, page_number: page_number, total_pages: total_pages} =
+      People.list_people(page: page, per_page: per_page)
+
+    render(conn, :index,
+      people: people,
+      page_number: page_number,
+      total_pages: total_pages,
+      per_page: per_page
+    )
   end
 
   def new(conn, _params) do

@@ -2,6 +2,8 @@
 
 # Book of the dead
 
+![Screenshot 2025-04-25 at 11 17 47](https://github.com/user-attachments/assets/89ef6fde-fd9b-4904-994a-e14c7eede710)
+
 To start your Phoenix server:
 
 - Run `mix setup` to install and setup dependencies

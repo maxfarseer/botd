@@ -30,6 +30,7 @@ defmodule Botd.ActivityLogs do
     per_page = Keyword.get(opts, :per_page, 10)
 
     ActivityLog
+    |> preload([:user])
     |> order_by(desc: :inserted_at)
     |> Repo.paginate(page: page, page_size: per_page)
   end

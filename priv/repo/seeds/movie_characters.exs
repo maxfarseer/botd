@@ -2,28 +2,30 @@ defmodule Botd.Seeds.MovieCharacters do
   @moduledoc """
   Seed script to populate the database with famous deceased movie characters.
 
-  This script reads character data from movie_characters.csv file
+  This script reads character data from expanded_characters.csv file
   and imports them into the database.
   """
 
   alias Botd.People
   alias Botd.ActivityLogs
+  alias Botd.Repo
+  alias Botd.Users.User
   alias NimbleCSV.RFC4180, as: CSV
 
   @doc """
   Reads the CSV file and inserts the characters into the database.
   """
   def seed do
+    # Ensure the system user exists
+    system_user = ensure_system_user()
+
     # Path to the CSV file
     file_path = Path.join(__DIR__, "expanded_characters.csv")
 
     # Check if CSV file exists
     unless File.exists?(file_path) do
-      raise "CSV file not found at #{file_path}. Please ensure movie_characters.csv exists."
+      raise "CSV file not found at #{file_path}. Please ensure expanded_characters.csv exists."
     end
-
-    # Create a system user for seeding operations
-    system_user = %{id: 0, email: "system@bookofthedead.local"}
 
     # Count how many characters were added successfully
     {count, errors} =
@@ -41,6 +43,19 @@ defmodule Botd.Seeds.MovieCharacters do
 
     if errors > 0 do
       IO.puts("⚠ #{errors} characters could not be added due to errors")
+    end
+  end
+
+  defp ensure_system_user do
+    # Check if the system user already exists
+    case Repo.get_by(User, id: 0) do
+      nil ->
+        # Create the system user if it doesn't exist
+        %User{id: 0, email: "system@bookofthedead.local", role: :admin}
+        |> Repo.insert!()
+
+      user ->
+        user
     end
   end
 

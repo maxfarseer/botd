@@ -100,6 +100,16 @@ defmodule Botd.ActivityLogsTest do
       assert newer.inserted_at >= older.inserted_at
     end
 
+    test "list_activity_logs/0 returns activity logs with user preloaded", %{
+      user: user,
+      person: person
+    } do
+      ActivityLogs.log_person_action(:create_person, person, user)
+      %{entries: [first_log | _other]} = ActivityLogs.list_activity_logs()
+
+      assert first_log.user.email == user.email
+    end
+
     test "get_activity_log!/1 returns the log with given id", %{user: user, person: person} do
       {:ok, log} = ActivityLogs.log_person_action(:create_person, person, user)
       retrieved_log = ActivityLogs.get_activity_log!(log.id)

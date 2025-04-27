@@ -81,6 +81,7 @@ defmodule BotdWeb.Router do
     pipe_through :admin
 
     get "/logs", ActivityLogController, :index
+    get "/logs-test", ActivityLogController, :index_test
   end
 
   # Other scopes may use custom stacks.

@@ -1,0 +1,25 @@
+<.header>
+  Activity Logs
+</.header>
+
+<%!-- <.table id="activity_logs" rows={@activity_logs}>
+  <:col :let={log} label="User">{log.user_id}</:col>
+  <:col :let={log} label="User Email">{log.user.email}</:col>
+  <:col :let={log} label="Action">
+    <span class={action_color(log.action)}>{format_action(log.action)}</span>
+  </:col>
+  <:col :let={log} label="Type">{log.entity_type}</:col>
+  <:col :let={log} label="When">{format_timestamp(log.inserted_at)}</:col>
+</.table> --%>
+
+<.table id="activity_logs" rows={@activity_logs}>
+  <:col :let={log} label="User">{log.user_email}</:col>
+  <:col :let={log} label="Name">{log.name}</:col>
+</.table>
+
+<.pagination
+  page_number={@page_number}
+  total_pages={@total_pages}
+  per_page={@per_page}
+  path="/admin/logs-test"
+/>

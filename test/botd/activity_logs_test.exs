@@ -100,14 +100,31 @@ defmodule Botd.ActivityLogsTest do
       assert newer.inserted_at >= older.inserted_at
     end
 
-    test "list_activity_logs/0 returns activity logs with user preloaded", %{
+    test "list_activity_logs/0 returns activity logs with user email", %{
       user: user,
       person: person
     } do
       ActivityLogs.log_person_action(:create_person, person, user)
       %{entries: [first_log | _other]} = ActivityLogs.list_activity_logs()
 
-      assert first_log.user.email == user.email
+      assert first_log.user_email == user.email
+    end
+
+    test "list_activity_logs returns activity logs with perosona name or suggestion name according to entity_type",
+         %{
+           user: user,
+           person: person,
+           suggestion: suggestion
+         } do
+      ActivityLogs.log_person_action(:create_person, person, user)
+      ActivityLogs.log_suggestion_action(:approve_suggestion, suggestion)
+
+      %{entries: [person_log | others]} = ActivityLogs.list_activity_logs()
+
+      [suggestion_log | _others] = others
+
+      assert person_log.name in [person.name, "Test Person"]
+      assert suggestion_log.name in [suggestion.name, "Test Suggestion"]
     end
 
     test "get_activity_log!/1 returns the log with given id", %{user: user, person: person} do

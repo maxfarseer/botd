@@ -20,18 +20,32 @@ defmodule Botd.ActivityLogs do
   """
   import Ecto.Query, warn: false
   alias Botd.ActivityLogs.ActivityLog
+  alias Botd.People.Person
   alias Botd.Repo
+  alias Botd.Suggestions.Suggestion
 
-  @doc """
-  Returns a list of all activity logs, sorted by insertion date (newest first).
-  """
   def list_activity_logs(opts \\ []) do
     page = Keyword.get(opts, :page, 1)
-    per_page = Keyword.get(opts, :per_page, 10)
+    per_page = Keyword.get(opts, :per_page, 2)
 
     ActivityLog
-    |> preload([:user])
-    |> order_by(desc: :inserted_at)
+    |> join(:left, [l], p in Person, on: l.entity_type == :person and l.entity_id == p.id)
+    |> join(:left, [l], s in Suggestion, on: l.entity_type == :suggestion and l.entity_id == s.id)
+    |> join(:left, [l], u in assoc(l, :user))
+    |> select([l, p, s, u], %{
+      id: l.id,
+      name:
+        fragment(
+          "COALESCE(?, ?)",
+          p.name,
+          s.name
+        ),
+      reviewed_by_id: s.reviewed_by_id,
+      action: l.action,
+      inserted_at: l.inserted_at,
+      user_email: u.email
+    })
+    |> order_by([l], desc: l.inserted_at)
     |> Repo.paginate(page: page, page_size: per_page)
   end
 

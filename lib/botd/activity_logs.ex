@@ -24,20 +24,7 @@ defmodule Botd.ActivityLogs do
   alias Botd.Repo
   alias Botd.Suggestions.Suggestion
 
-  @doc """
-  Returns a list of all activity logs, sorted by insertion date (newest first).
-  """
   def list_activity_logs(opts \\ []) do
-    page = Keyword.get(opts, :page, 1)
-    per_page = Keyword.get(opts, :per_page, 10)
-
-    ActivityLog
-    |> preload([:user])
-    |> order_by(desc: :inserted_at)
-    |> Repo.paginate(page: page, page_size: per_page)
-  end
-
-  def list_activity_logs2(opts \\ []) do
     page = Keyword.get(opts, :page, 1)
     per_page = Keyword.get(opts, :per_page, 2)
 
@@ -46,6 +33,7 @@ defmodule Botd.ActivityLogs do
     |> join(:left, [l], s in Suggestion, on: l.entity_type == :suggestion and l.entity_id == s.id)
     |> join(:left, [l], u in assoc(l, :user))
     |> select([l, p, s, u], %{
+      id: l.id,
       name:
         fragment(
           "COALESCE(?, ?)",
@@ -54,7 +42,7 @@ defmodule Botd.ActivityLogs do
         ),
       reviewed_by_id: s.reviewed_by_id,
       action: l.action,
-      time: l.inserted_at,
+      inserted_at: l.inserted_at,
       user_email: u.email
     })
     |> order_by([l], desc: l.inserted_at)

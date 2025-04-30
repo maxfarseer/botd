@@ -32,6 +32,7 @@ defmodule Botd.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.7.20"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
@@ -58,7 +59,6 @@ defmodule Botd.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       # Added
-      {:pow, "~> 1.0.39"},
       {:floki, ">= 0.37.1", only: :test},
       {:git_hooks, "~> 0.8.0", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

@@ -18,7 +18,7 @@ defmodule Botd.ActivityLogs do
 
   Example and @doc for `list_activity_logs` fn remained in this module, check later auto-generated docs to decide what to keep.
   """
-  import Ecto.Query, warn: false
+  import Ecto.Query
   alias Botd.ActivityLogs.ActivityLog
   alias Botd.People.Person
   alias Botd.Repo

@@ -9,7 +9,7 @@ defmodule Botd.Seeds.MovieCharacters do
   alias Botd.People
   alias Botd.ActivityLogs
   alias Botd.Repo
-  alias Botd.Users.User
+  alias Botd.Accounts.User
   alias NimbleCSV.RFC4180, as: CSV
 
   @doc """
@@ -51,7 +51,7 @@ defmodule Botd.Seeds.MovieCharacters do
     case Repo.get_by(User, id: 0) do
       nil ->
         # Create the system user if it doesn't exist
-        %User{id: 0, email: "system@bookofthedead.local", role: :admin}
+        %User{id: 0, email: "system@bookofthedead.local", role: :moderator, hashed_password: "123"}
         |> Repo.insert!()
 
       user ->

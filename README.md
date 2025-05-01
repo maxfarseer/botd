@@ -50,7 +50,7 @@ In the terminal `iex -S mix`
 
 ```
 alias Botd.Repo
-alias Botd.Users.User
+alias Botd.Accounts.User
 
 # Find a user
 user = Repo.get_by(User, email: "user@example.com")

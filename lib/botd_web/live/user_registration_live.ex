@@ -33,6 +33,7 @@ defmodule BotdWeb.UserRegistrationLive do
 
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
+        <input type="hidden" name="user[role]" value="member" />
 
         <:actions>
           <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>

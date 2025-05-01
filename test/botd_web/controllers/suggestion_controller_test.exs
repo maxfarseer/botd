@@ -1,36 +1,17 @@
 defmodule BotdWeb.SuggestionControllerTest do
   use BotdWeb.ConnCase
 
+  alias Botd.AccountsFixtures
   alias Botd.People
-  alias Botd.Repo
   alias Botd.Suggestions
-  alias Botd.Users.User
 
   setup do
     # Create users with different roles
-    member_user =
-      %User{
-        id: 1,
-        email: "member@users.com",
-        role: :member
-      }
-      |> Repo.insert!()
-
-    admin_user =
-      %User{
-        id: 2,
-        email: "admin@users.com",
-        role: :admin
-      }
-      |> Repo.insert!()
+    member_user = AccountsFixtures.user_fixture(%{email: "member@users.com", role: :member})
+    admin_user = AccountsFixtures.user_fixture(%{email: "admin@users.com", role: :admin})
 
     moderator_user =
-      %User{
-        id: 3,
-        email: "moderator@users.com",
-        role: :moderator
-      }
-      |> Repo.insert!()
+      AccountsFixtures.user_fixture(%{email: "moderator@users.com", role: :moderator})
 
     # Create a suggestion from the member
     {:ok, suggestion} =
@@ -75,7 +56,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     test "renders form for new suggestion", %{conn: conn, member: member} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> get(~p"/suggestions/new")
 
       assert html_response(conn, 200) =~ "Suggest a New Person"
@@ -83,7 +64,7 @@ defmodule BotdWeb.SuggestionControllerTest do
 
     test "redirects if not logged in", %{conn: conn} do
       conn = get(conn, ~p"/suggestions/new")
-      assert redirected_to(conn) =~ "/session/new"
+      assert redirected_to(conn) =~ "/users/log_in"
     end
   end
 
@@ -97,7 +78,7 @@ defmodule BotdWeb.SuggestionControllerTest do
 
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> post(~p"/suggestions", valid_attrs)
 
       assert redirected_to(conn) =~ "/suggestions/my"
@@ -119,7 +100,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> post(~p"/suggestions", invalid_attrs)
 
       assert html_response(conn, 200) =~ "Suggest a New Person"
@@ -128,7 +109,7 @@ defmodule BotdWeb.SuggestionControllerTest do
 
     test "redirects if not logged in", %{conn: conn, valid_attrs: valid_attrs} do
       conn = post(conn, ~p"/suggestions", valid_attrs)
-      assert redirected_to(conn) =~ "/session/new"
+      assert redirected_to(conn) =~ "/users/log_in"
     end
   end
 
@@ -136,7 +117,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     test "lists user's suggestions", %{conn: conn, member: member, suggestion: suggestion} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> get(~p"/suggestions/my")
 
       assert html_response(conn, 200) =~ "My Suggestions"
@@ -145,11 +126,11 @@ defmodule BotdWeb.SuggestionControllerTest do
 
     test "redirects if not logged in", %{conn: conn} do
       conn = get(conn, ~p"/suggestions/my")
-      assert redirected_to(conn) =~ "/session/new"
+      assert redirected_to(conn) =~ "/users/log_in"
     end
   end
 
-  describe "index (for moderators)" do
+  describe "index (for moderators & admin)" do
     test "lists all pending suggestions for admin", %{
       conn: conn,
       admin: admin,
@@ -157,7 +138,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> log_in_user(admin)
         |> get(~p"/protected/suggestions")
 
       assert html_response(conn, 200) =~ "Pending Suggestions"
@@ -171,7 +152,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(moderator, otp_app: :botd)
+        |> log_in_user(moderator)
         |> get(~p"/protected/suggestions")
 
       assert html_response(conn, 200) =~ "Pending Suggestions"
@@ -181,7 +162,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     test "redirects if logged in as regular member", %{conn: conn, member: member} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> get(~p"/protected/suggestions")
 
       assert redirected_to(conn) == "/"
@@ -189,7 +170,7 @@ defmodule BotdWeb.SuggestionControllerTest do
 
     test "redirects if not logged in", %{conn: conn} do
       conn = get(conn, ~p"/protected/suggestions")
-      assert redirected_to(conn) =~ "/session/new"
+      assert redirected_to(conn) =~ "/users/log_in"
     end
   end
 
@@ -197,7 +178,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     test "shows suggestion details for admin", %{conn: conn, admin: admin, suggestion: suggestion} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> log_in_user(admin)
         |> get(~p"/protected/suggestions/#{suggestion}")
 
       assert html_response(conn, 200) =~ suggestion.name
@@ -212,7 +193,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(moderator, otp_app: :botd)
+        |> log_in_user(moderator)
         |> get(~p"/protected/suggestions/#{suggestion}")
 
       assert html_response(conn, 200) =~ suggestion.name
@@ -227,7 +208,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> get(~p"/protected/suggestions/#{suggestion}")
 
       assert redirected_to(conn) == "/"
@@ -242,7 +223,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> log_in_user(admin)
         |> post(~p"/protected/suggestions/#{suggestion}/approve")
 
       # Verify person was created in database
@@ -268,7 +249,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> post(~p"/protected/suggestions/#{suggestion}/approve")
 
       assert redirected_to(conn) == "/"
@@ -283,7 +264,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     test "rejects suggestion for admin", %{conn: conn, admin: admin, suggestion: suggestion} do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> log_in_user(admin)
         |> post(~p"/protected/suggestions/#{suggestion}/reject", %{"notes" => "Not suitable"})
 
       updated_suggestion = Suggestions.get_suggestion!(suggestion.id)
@@ -301,7 +282,7 @@ defmodule BotdWeb.SuggestionControllerTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> post(~p"/protected/suggestions/#{suggestion}/reject", %{"notes" => "Not suitable"})
 
       assert redirected_to(conn) == "/"

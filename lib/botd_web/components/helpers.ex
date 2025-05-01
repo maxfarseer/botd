@@ -2,18 +2,21 @@ defmodule BotdWeb.Helpers do
   @moduledoc """
   View helpers for role-based access control.
   """
-  alias Botd.Users.User
+
+  alias Botd.Accounts.User
 
   def admin?(conn) do
-    conn
-    |> Pow.Plug.current_user()
-    |> User.admin?()
+    case conn.assigns[:current_user] do
+      %User{role: :admin} -> true
+      _ -> false
+    end
   end
 
   def moderator_or_admin?(conn) do
-    conn
-    |> Pow.Plug.current_user()
-    |> User.moderator_or_admin?()
+    case conn.assigns[:current_user] do
+      %User{role: role} when role in [:moderator, :admin] -> true
+      _ -> false
+    end
   end
 
   def show_if(condition, content) do

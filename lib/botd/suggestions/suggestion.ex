@@ -20,8 +20,8 @@ defmodule Botd.Suggestions.Suggestion do
     field :status, Ecto.Enum, values: @statuses, default: :pending
     field :notes, :string
 
-    belongs_to :user, Botd.Users.User
-    belongs_to :reviewed_by, Botd.Users.User
+    belongs_to :user, Botd.Accounts.User
+    belongs_to :reviewed_by, Botd.Accounts.User
 
     timestamps()
   end

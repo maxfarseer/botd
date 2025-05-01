@@ -1,9 +1,8 @@
 defmodule BotdWeb.PersonHTMLTest do
   use BotdWeb.ConnCase, async: true
 
+  alias Botd.AccountsFixtures
   alias Botd.People
-  alias Botd.Repo
-  alias Botd.Users.User
 
   setup do
     person_attrs = %{
@@ -14,33 +13,13 @@ defmodule BotdWeb.PersonHTMLTest do
 
     {:ok, person} = People.create_person(person_attrs)
 
-    # Create users with different roles
-    admin_params = %{
-      email: "admin@example.com",
-      password: "secret1234",
-      password_confirmation: "secret1234",
-      role: :admin
-    }
+    member_user = AccountsFixtures.user_fixture(%{email: "member@users.com", role: :member})
+    admin_user = AccountsFixtures.user_fixture(%{email: "admin@users.com", role: :admin})
 
-    moderator_params = %{
-      email: "moderator@example.com",
-      password: "secret1234",
-      password_confirmation: "secret1234",
-      role: :moderator
-    }
+    moderator_user =
+      AccountsFixtures.user_fixture(%{email: "moderator@users.com", role: :moderator})
 
-    member_params = %{
-      email: "member@example.com",
-      password: "secret1234",
-      password_confirmation: "secret1234",
-      role: :member
-    }
-
-    {:ok, admin} = %User{} |> User.changeset(admin_params) |> Repo.insert()
-    {:ok, moderator} = %User{} |> User.changeset(moderator_params) |> Repo.insert()
-    {:ok, member} = %User{} |> User.changeset(member_params) |> Repo.insert()
-
-    %{person: person, admin: admin, moderator: moderator, member: member}
+    %{person: person, admin: admin_user, moderator: moderator_user, member: member_user}
   end
 
   describe "Person show.html" do
@@ -69,7 +48,7 @@ defmodule BotdWeb.PersonHTMLTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(member, otp_app: :botd)
+        |> log_in_user(member)
         |> get(~p"/people/#{person}")
 
       assert html_response(conn, 200) =~ person.name
@@ -91,7 +70,7 @@ defmodule BotdWeb.PersonHTMLTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(admin, otp_app: :botd)
+        |> log_in_user(admin)
         |> get(~p"/people/#{person}")
 
       assert html_response(conn, 200) =~ person.name
@@ -113,7 +92,7 @@ defmodule BotdWeb.PersonHTMLTest do
     } do
       conn =
         conn
-        |> Pow.Plug.assign_current_user(moderator, otp_app: :botd)
+        |> log_in_user(moderator)
         |> get(~p"/people/#{person}")
 
       assert html_response(conn, 200) =~ person.name

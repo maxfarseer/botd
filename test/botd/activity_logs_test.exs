@@ -1,29 +1,16 @@
 defmodule Botd.ActivityLogsTest do
   use Botd.DataCase
 
+  alias Botd.AccountsFixtures
   alias Botd.ActivityLogs
   alias Botd.People.Person
   alias Botd.Repo
   alias Botd.Suggestions.Suggestion
-  alias Botd.Users.User
 
   describe "activity_logs" do
     setup do
-      user =
-        %User{
-          id: 1,
-          email: "test@example.com",
-          role: :member
-        }
-        |> Repo.insert!()
-
-      admin_user =
-        %User{
-          id: 2,
-          email: "admin@example.com",
-          role: :admin
-        }
-        |> Repo.insert!()
+      member_user = AccountsFixtures.user_fixture(%{email: "member@users.com", role: :member})
+      admin_user = AccountsFixtures.user_fixture(%{email: "admin@users.com", role: :admin})
 
       {:ok, person} =
         %Person{}
@@ -41,13 +28,12 @@ defmodule Botd.ActivityLogsTest do
           death_date: ~D[2023-01-01],
           place: "Test City",
           status: :pending,
-          user: user,
+          user: member_user,
           reviewed_by_id: admin_user.id
         }
         |> Repo.insert!()
 
-      # %{user: user, person: person, suggestion: suggestion}
-      %{user: user, person: person, suggestion: suggestion, admin_user: admin_user}
+      %{user: member_user, person: person, suggestion: suggestion, admin_user: admin_user}
     end
 
     test "list_activity_logs/1 returns paginated activity logs", %{
@@ -137,19 +123,19 @@ defmodule Botd.ActivityLogsTest do
       assert retrieved_log.user_id == user.id
     end
 
-    test "create_activity_log/1 creates a log with valid attributes" do
+    test "create_activity_log/1 creates a log with valid attributes", %{user: user} do
       valid_attrs = %{
         action: :create_person,
         entity_type: :person,
         entity_id: 42,
-        user_id: 1
+        user_id: user.id
       }
 
       {:ok, log} = ActivityLogs.create_activity_log(valid_attrs)
       assert log.action == :create_person
       assert log.entity_type == :person
       assert log.entity_id == 42
-      assert log.user_id == 1
+      assert log.user_id == user.id
     end
 
     test "create_activity_log/1 returns error with invalid attributes" do

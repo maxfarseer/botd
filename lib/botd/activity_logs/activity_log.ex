@@ -31,7 +31,7 @@ defmodule Botd.ActivityLogs.ActivityLog do
     field :entity_id, :integer
     field :entity_type, Ecto.Enum, values: @entity_types
 
-    belongs_to :user, Botd.Users.User
+    belongs_to :user, Botd.Accounts.User
 
     timestamps()
   end

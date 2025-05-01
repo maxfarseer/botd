@@ -10,7 +10,7 @@ defmodule BotdWeb.SuggestionController do
   end
 
   def create(conn, %{"suggestion" => suggestion_params}) do
-    user = Pow.Plug.current_user(conn)
+    user = conn.assigns.current_user
 
     case Suggestions.create_suggestion(suggestion_params, user) do
       {:ok, _suggestion} ->
@@ -24,7 +24,7 @@ defmodule BotdWeb.SuggestionController do
   end
 
   def my_suggestions(conn, _params) do
-    user = Pow.Plug.current_user(conn)
+    user = conn.assigns.current_user
     suggestions = Suggestions.list_user_suggestions(user)
     render(conn, :my_suggestions, suggestions: suggestions)
   end
@@ -41,7 +41,7 @@ defmodule BotdWeb.SuggestionController do
 
   def approve(conn, %{"id" => id}) do
     suggestion = Suggestions.get_suggestion!(id)
-    reviewer = Pow.Plug.current_user(conn)
+    reviewer = conn.assigns.current_user
 
     case Suggestions.approve_suggestion(suggestion, reviewer) do
       {:ok, {approved_suggestion, person}} ->
@@ -69,7 +69,7 @@ defmodule BotdWeb.SuggestionController do
 
   def reject(conn, %{"id" => id, "notes" => notes}) do
     suggestion = Suggestions.get_suggestion!(id)
-    reviewer = Pow.Plug.current_user(conn)
+    reviewer = conn.assigns.current_user
 
     case Suggestions.reject_suggestion(suggestion, reviewer, notes) do
       {:ok, rejected_suggestion} ->

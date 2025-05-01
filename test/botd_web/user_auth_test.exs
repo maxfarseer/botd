@@ -1,10 +1,11 @@
 defmodule BotdWeb.UserAuthTest do
   use BotdWeb.ConnCase, async: true
 
-  alias Phoenix.LiveView
+  import Botd.AccountsFixtures
+
   alias Botd.Accounts
   alias BotdWeb.UserAuth
-  import Botd.AccountsFixtures
+  alias Phoenix.LiveView
 
   @remember_me_cookie "_botd_web_user_remember_me"
 

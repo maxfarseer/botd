@@ -1,4 +1,10 @@
 defmodule Botd.Accounts.User do
+  @moduledoc """
+  The User schema and changeset functions.
+  This module defines the User schema which represents a user in the
+  system. The module also provides changeset
+  functions.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 

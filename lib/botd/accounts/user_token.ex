@@ -1,4 +1,7 @@
 defmodule Botd.Accounts.UserToken do
+  @moduledoc """
+  The UserToken schema and functions for generating and verifying tokens.
+  """
   use Ecto.Schema
   import Ecto.Query
   alias Botd.Accounts.UserToken

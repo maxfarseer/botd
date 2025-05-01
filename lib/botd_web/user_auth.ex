@@ -1,4 +1,8 @@
 defmodule BotdWeb.UserAuth do
+  @moduledoc """
+  This module provides authentication functionality for the application.
+  """
+
   use BotdWeb, :verified_routes
 
   import Plug.Conn

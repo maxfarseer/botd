@@ -1,4 +1,9 @@
 defmodule Botd.Accounts.UserNotifier do
+  @moduledoc """
+  The UserNotifier module is responsible for sending notifications to users
+  via email. It provides functions to deliver various types of notifications
+  such as account confirmation, password reset, and email update instructions.
+  """
   import Swoosh.Email
 
   alias Botd.Mailer

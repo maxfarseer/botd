@@ -4,9 +4,8 @@ defmodule Botd.Accounts do
   """
 
   import Ecto.Query, warn: false
+  alias Botd.Accounts.{User, UserNotifier, UserToken}
   alias Botd.Repo
-
-  alias Botd.Accounts.{User, UserToken, UserNotifier}
 
   ## Database getters
 

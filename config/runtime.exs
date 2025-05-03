@@ -20,15 +20,17 @@ if System.get_env("PHX_SERVER") do
   config :botd, BotdWeb.Endpoint, server: true
 end
 
-telegram_token = System.get_env("TELEGRAM_BOT_TOKEN")
+if config_env() == :prod do
+  telegram_token = System.get_env("TELEGRAM_BOT_TOKEN")
 
-if telegram_token do
-  # config :botd, :telegram_token, System.get_env("TELEGRAM_BOT_TOKEN")
-else
-  raise """
-  environment variable TELEGRAM_BOT_TOKEN is missing.
-  For example: 1234567890:something
-  """
+  if telegram_token do
+    # config :botd, :telegram_token, System.get_env("TELEGRAM_BOT_TOKEN")
+  else
+    raise """
+    environment variable TELEGRAM_BOT_TOKEN is missing.
+    For example: 1234567890:something
+    """
+  end
 end
 
 if config_env() == :prod do

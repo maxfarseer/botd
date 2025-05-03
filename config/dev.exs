@@ -29,6 +29,11 @@ config :botd, BotdWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:botd, ~w(--watch)]}
   ]
 
+config :botd, Botd.TelegramBot,
+  telegramToken:
+    System.get_env("TELEGRAM_BOT_TOKEN") ||
+      raise("TELEGRAM_BOT_TOKEN environment variable is required")
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

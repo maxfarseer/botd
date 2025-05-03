@@ -33,6 +33,7 @@ defmodule BotdWeb.Router do
     get "/", PageController, :home
     get "/people", PersonController, :index
     get "/people/:id", PersonController, :show
+    get "/telegram", TelegramController, :playground
   end
 
   scope "/protected", BotdWeb do

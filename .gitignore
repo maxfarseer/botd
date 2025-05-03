@@ -37,3 +37,6 @@ npm-debug.log
 
 .idea/
 backup.sql
+
+**/.DS_Store
+/.env

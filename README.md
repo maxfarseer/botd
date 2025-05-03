@@ -154,6 +154,14 @@ def create(conn, %{"person" => person_params}) do
 end
 ```
 
+## Telegram
+
+### Retrive telegram secret in the app
+
+```
+@telegram_token System.get_env("TELEGRAM_BOT_TOKEN")
+```
+
 ## Learn more
 
 - Official website: https://www.phoenixframework.org/

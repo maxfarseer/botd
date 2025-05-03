@@ -6,12 +6,8 @@ defmodule BotdWeb.TelegramController do
                   ]
 
   def playground(conn, _params) do
-    IO.inspect(@telegram_token, label: "Telegram Token")
-
     {:ok, %{"first_name" => first_name, "username" => username}} =
-      IO.inspect(Telegram.Api.request(@telegram_token, "getMe"))
-
-    IO.inspect(first_name)
+      Telegram.Api.request(@telegram_token, "getMe")
 
     render(conn, :playground, info: %{first_name: first_name, username: username})
   end

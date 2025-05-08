@@ -209,22 +209,22 @@ defmodule BotdWeb.RouterTest do
     end
   end
 
-  describe "GET /telegram" do
+  describe "GET /telegram/playground" do
     test "allows access for admin", %{conn: conn, admin: admin} do
       conn = log_in_user(conn, admin)
-      conn = get(conn, ~p"/telegram")
+      conn = get(conn, ~p"/telegram/playground")
       assert html_response(conn, 200) =~ "Telegram Playground"
     end
 
     test "allows access for moderator", %{conn: conn, moderator: moderator} do
       conn = log_in_user(conn, moderator)
-      conn = get(conn, ~p"/telegram")
+      conn = get(conn, ~p"/telegram/playground")
       assert html_response(conn, 200) =~ "Telegram Playground"
     end
 
     test "denies access for member", %{conn: conn, member: member} do
       conn = log_in_user(conn, member)
-      conn = get(conn, ~p"/telegram")
+      conn = get(conn, ~p"/telegram/playground")
       assert redirected_to(conn) == ~p"/"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
@@ -232,7 +232,7 @@ defmodule BotdWeb.RouterTest do
     end
 
     test "denies access for unauthenticated user", %{conn: conn} do
-      conn = get(conn, ~p"/telegram")
+      conn = get(conn, ~p"/telegram/playground")
       assert redirected_to(conn) == ~p"/users/log_in"
     end
   end

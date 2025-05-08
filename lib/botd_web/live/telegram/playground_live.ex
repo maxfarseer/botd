@@ -1,4 +1,4 @@
-defmodule BotdWeb.TelegramPlaygroundLive do
+defmodule BotdWeb.Telegram.PlaygroundLive do
   @moduledoc """
   This controller is used to handle Telegram bot interactions.
 

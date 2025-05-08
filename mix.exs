@@ -63,7 +63,8 @@ defmodule Botd.MixProject do
       {:git_hooks, "~> 0.8.0", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:nimble_csv, "~> 1.2"},
-      {:scrivener_ecto, "~> 3.0.1"}
+      {:scrivener_ecto, "~> 3.0.1"},
+      {:telegram, github: "visciang/telegram", tag: "2.1.0"}
     ]
   end
 

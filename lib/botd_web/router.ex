@@ -122,6 +122,15 @@ defmodule BotdWeb.Router do
   end
 
   scope "/", BotdWeb do
+    pipe_through [:browser, :moderator]
+
+    live_session :require_moderator,
+      on_mount: [{BotdWeb.UserAuth, :ensure_authenticated}] do
+      live "/telegram", TelegramController, :playground
+    end
+  end
+
+  scope "/", BotdWeb do
     pipe_through [:browser]
 
     delete "/users/log_out", UserSessionController, :delete

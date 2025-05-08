@@ -4,7 +4,17 @@
 
 ![Screenshot 2025-04-25 at 11 17 47](https://github.com/user-attachments/assets/89ef6fde-fd9b-4904-994a-e14c7eede710)
 
-To start your Phoenix server:
+To start the app:
+
+- set `TELEGRAM_BOT_TOKEN`, for example:
+
+_~/.botd_bot_credentials_
+
+```
+export TELEGRAM_BOT_TOKEN=123123
+```
+
+then `source ~/.botd_bot_credentials` and in the same tab:
 
 - Run `mix setup` to install and setup dependencies
 - Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
@@ -152,6 +162,14 @@ def create(conn, %{"person" => person_params}) do
       |> render(:new, changeset: People.change_person(%Person{}))
   end
 end
+```
+
+## Telegram
+
+### Retrive telegram secret in the app
+
+```
+@telegram_token System.get_env("TELEGRAM_BOT_TOKEN")
 ```
 
 ## Learn more

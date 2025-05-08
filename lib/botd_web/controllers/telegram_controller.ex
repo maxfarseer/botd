@@ -1,4 +1,30 @@
 defmodule BotdWeb.TelegramController do
+  @moduledoc """
+  This controller is used to handle Telegram bot interactions.
+
+  The answer message is:
+  Message: %{
+    "chat" => %{
+      "first_name" => "Max",
+      "id" => 123456789,
+      "last_name" => "P",
+      "type" => "private",
+      "username" => "test_username"
+    },
+    "date" => 1746525897,
+    "from" => %{
+      "first_name" => "Max",
+      "id" => 123456789,
+      "is_bot" => false,
+      "is_premium" => true,
+      "language_code" => "en",
+      "last_name" => "P",
+      "username" => "usetest_username"
+    },
+    "message_id" => 5,
+    "text" => "About something..."
+  }
+  """
   use BotdWeb, :controller
 
   @telegram_token Application.compile_env(:botd, Botd.TelegramBot, telegramToken: "default_token")[
@@ -14,23 +40,35 @@ defmodule BotdWeb.TelegramController do
 
   def playground(conn, _params) do
     case Telegram.Api.request(@telegram_token, "getUpdates", offset: -1, timeout: 30) do
-      {:ok, message} ->
-        IO.inspect(message)
+      {:ok, []} ->
+        render(conn, :playground, info: %{first_name: "Unknown", text: "No updates"})
 
-        first_name =
-          message
-          |> List.first()
-          |> Map.get("message")
-          |> Map.get("from")
-          |> Map.get("first_name")
+      {:ok,
+       [
+         %{
+           "message" => %{
+             "chat" => %{
+               "id" => chat_id,
+               "username" => username
+             },
+             "text" => text
+           }
+         }
+         | _
+       ]} ->
+        keyboard = [
+          ["A", "B"]
+        ]
 
-        text =
-          message
-          |> List.first()
-          |> Map.get("message")
-          |> Map.get("text")
+        keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
 
-        render(conn, :playground, info: %{first_name: first_name, text: text})
+        Telegram.Api.request(@telegram_token, "sendMessage",
+          chat_id: chat_id,
+          text: "Here a keyboard for #{chat_id}!",
+          reply_markup: {:json, keyboard_markup}
+        )
+
+        render(conn, :playground, info: %{username: username, text: text})
 
       {:error, reason} ->
         IO.inspect(reason, label: "Error fetching updates from Telegram bot")

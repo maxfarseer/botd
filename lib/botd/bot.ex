@@ -15,7 +15,6 @@ defmodule Botd.Bot do
 
     case Telegram.Api.request(key, "getMe") do
       {:ok, me} ->
-        IO.inspect("Bot successfully self-identified: #{me["username"]}")
         # Logger.info("Bot successfully self-identified: #{me["username"]}")
 
         state = %{
@@ -28,8 +27,7 @@ defmodule Botd.Bot do
 
         {:ok, state}
 
-      error ->
-        IO.inspect("Bot failed to self-identify: #{inspect(error)}")
+      _error ->
         # Logger.error("Bot failed to self-identify: #{inspect(error)}")
         :error
     end
@@ -65,7 +63,6 @@ defmodule Botd.Bot do
     # Process our updates
     |> Enum.map(fn update ->
       # Logger.info("Update received: #{inspect(update)}")
-      IO.inspect("Update received: #{inspect(update)}")
 
       # Offload the updates to whoever they may concern
       broadcast(update)

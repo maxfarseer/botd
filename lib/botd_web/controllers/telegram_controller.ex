@@ -58,7 +58,7 @@ defmodule BotdWeb.TelegramController do
   def render(assigns) do
     ~H"""
     <section class="phx-hero">
-      <h1>{gettext("Welcome to my Bot!")}</h1>
+      <h1>{gettext("Telegram Playground")}</h1>
 
       <%= for message <- Enum.reverse(@messages) do %>
         <p><strong>{message.from}:</strong>{message.text}</p>

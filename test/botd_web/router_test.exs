@@ -226,7 +226,9 @@ defmodule BotdWeb.RouterTest do
       conn = log_in_user(conn, member)
       conn = get(conn, ~p"/telegram")
       assert redirected_to(conn) == ~p"/"
-      assert get_flash(conn, :error) == "You are not authorized to access this page."
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
+               "You are not authorized to access this page."
     end
 
     test "denies access for unauthenticated user", %{conn: conn} do

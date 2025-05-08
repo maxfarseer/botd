@@ -4,6 +4,7 @@ defmodule Botd.Bot do
   """
 
   use GenServer
+  require Logger
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, opts)
@@ -15,7 +16,7 @@ defmodule Botd.Bot do
 
     case Telegram.Api.request(key, "getMe") do
       {:ok, me} ->
-        # Logger.info("Bot successfully self-identified: #{me["username"]}")
+        Logger.info("Bot successfully self-identified: #{me["username"]}")
 
         state = %{
           bot_key: key,
@@ -27,8 +28,8 @@ defmodule Botd.Bot do
 
         {:ok, state}
 
-      _error ->
-        # Logger.error("Bot failed to self-identify: #{inspect(error)}")
+      error ->
+        Logger.error("Bot failed to self-identify: #{inspect(error)}")
         :error
     end
   end
@@ -62,7 +63,7 @@ defmodule Botd.Bot do
     updates
     # Process our updates
     |> Enum.map(fn update ->
-      # Logger.info("Update received: #{inspect(update)}")
+      Logger.info("Update received: #{inspect(update)}")
 
       # Offload the updates to whoever they may concern
       broadcast(update)

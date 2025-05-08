@@ -208,4 +208,30 @@ defmodule BotdWeb.RouterTest do
       assert redirected_to(conn) == "/"
     end
   end
+
+  describe "GET /telegram" do
+    test "allows access for admin", %{conn: conn, admin: admin} do
+      conn = log_in_user(conn, admin)
+      conn = get(conn, ~p"/telegram")
+      assert html_response(conn, 200) =~ "Telegram Playground"
+    end
+
+    test "allows access for moderator", %{conn: conn, moderator: moderator} do
+      conn = log_in_user(conn, moderator)
+      conn = get(conn, ~p"/telegram")
+      assert html_response(conn, 200) =~ "Telegram Playground"
+    end
+
+    test "denies access for member", %{conn: conn, member: member} do
+      conn = log_in_user(conn, member)
+      conn = get(conn, ~p"/telegram")
+      assert redirected_to(conn) == ~p"/"
+      assert get_flash(conn, :error) == "You are not authorized to access this page."
+    end
+
+    test "denies access for unauthenticated user", %{conn: conn} do
+      conn = get(conn, ~p"/telegram")
+      assert redirected_to(conn) == ~p"/users/log_in"
+    end
+  end
 end

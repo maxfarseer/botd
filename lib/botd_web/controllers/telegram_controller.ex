@@ -25,57 +25,45 @@ defmodule BotdWeb.TelegramController do
     "text" => "About something..."
   }
   """
-  use BotdWeb, :controller
+  use BotdWeb, :live_view
 
-  @telegram_token Application.compile_env(:botd, Botd.TelegramBot, telegramToken: "default_token")[
-                    :telegramToken
-                  ]
+  @impl true
+  def mount(_params, _session, socket) do
+    Phoenix.PubSub.subscribe(Botd.PubSub, "telegram_bot_update")
+    {:ok, assign(socket, messages: [])}
+  end
 
-  # def playground(conn, _params) do
-  #   {:ok, %{"first_name" => first_name, "username" => username}} =
-  #     Telegram.Api.request(@telegram_token, "getMe")
+  @impl true
+  def handle_info({:update, update}, socket) do
+    {:noreply, assign(socket, messages: [to_message(update) | socket.assigns.messages])}
+  end
 
-  #   render(conn, :playground, info: %{first_name: first_name, username: username})
-  # end
+  defp to_message(%{"message" => message} = _update) do
+    firstname = get_in(message, ["from", "first_name"])
+    lastname = get_in(message, ["from", "last_name"])
+    username = get_in(message, ["from", "username"])
 
-  def playground(conn, _params) do
-    case Telegram.Api.request(@telegram_token, "getUpdates", offset: -1, timeout: 30) do
-      {:ok, []} ->
-        render(conn, :playground, info: %{first_name: "Unknown", text: "No updates"})
+    from =
+      case {firstname, lastname, username} do
+        {nil, _, username} -> username
+        {firstname, nil, _} -> firstname
+        {firstname, lastname, _} -> "#{firstname} #{lastname}"
+      end
 
-      {:ok,
-       [
-         %{
-           "message" => %{
-             "chat" => %{
-               "id" => chat_id,
-               "username" => username
-             },
-             "text" => text
-           }
-         }
-         | _
-       ]} ->
-        keyboard = [
-          ["A", "B"]
-        ]
+    text = get_in(message, ["text"])
+    %{from: from, text: text}
+  end
 
-        keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <section class="phx-hero">
+      <h1>{gettext("Welcome to my Bot!")}</h1>
 
-        Telegram.Api.request(@telegram_token, "sendMessage",
-          chat_id: chat_id,
-          text: "Here a keyboard for #{chat_id}!",
-          reply_markup: {:json, keyboard_markup}
-        )
-
-        render(conn, :playground, info: %{username: username, text: text})
-
-      {:error, _reason} ->
-        render(
-          conn |> put_flash(:error, "Error update, ask developer to inspect the _reason"),
-          :playground,
-          info: %{first_name: "Unknown", text: "Error fetching updates"}
-        )
-    end
+      <%= for message <- Enum.reverse(@messages) do %>
+        <p><strong>{message.from}:</strong>{message.text}</p>
+      <% end %>
+    </section>
+    """
   end
 end

@@ -40,3 +40,4 @@ backup.sql
 
 **/.DS_Store
 /.env
+/.vscode

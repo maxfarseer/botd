@@ -33,7 +33,6 @@ defmodule BotdWeb.Router do
     get "/", PageController, :home
     get "/people", PersonController, :index
     get "/people/:id", PersonController, :show
-    get "/telegram", TelegramController, :playground
   end
 
   scope "/protected", BotdWeb do
@@ -119,6 +118,15 @@ defmodule BotdWeb.Router do
       on_mount: [{BotdWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+    end
+  end
+
+  scope "/", BotdWeb do
+    pipe_through [:browser, :moderator]
+
+    live_session :require_moderator,
+      on_mount: [{BotdWeb.UserAuth, :ensure_authenticated}] do
+      live "/telegram", TelegramController, :playground
     end
   end
 

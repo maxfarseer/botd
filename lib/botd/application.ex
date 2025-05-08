@@ -17,12 +17,12 @@ defmodule Botd.Application do
       # Start a worker by calling: Botd.Worker.start_link(arg)
       # {Botd.Worker, arg},
 
-      # credo:disable-for-next-line Credo.Check.Design.TagTODO
-      # TODO:max ai suggest this, check why
-      # {Pow.Supervisor, otp_app: :botd},
-
       # Start to serve requests, typically the last entry
-      BotdWeb.Endpoint
+      BotdWeb.Endpoint,
+
+      # Start telegram bot genserver
+      {Botd.Bot,
+       bot_key: System.get_env("TELEGRAM_BOT_TOKEN") || raise("TELEGRAM_BOT_TOKEN is not set")}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

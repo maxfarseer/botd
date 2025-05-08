@@ -70,9 +70,12 @@ defmodule BotdWeb.TelegramController do
 
         render(conn, :playground, info: %{username: username, text: text})
 
-      {:error, reason} ->
-        IO.inspect(reason, label: "Error fetching updates from Telegram bot")
-        render(conn, :playground, info: %{first_name: "Unknown", text: "Error fetching updates"})
+      {:error, _reason} ->
+        render(
+          conn |> put_flash(:error, "Error update, ask developer to inspect the _reason"),
+          :playground,
+          info: %{first_name: "Unknown", text: "Error fetching updates"}
+        )
     end
   end
 end

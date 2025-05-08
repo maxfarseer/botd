@@ -1,0 +1,7 @@
+<section class="phx-hero">
+  <h1>{gettext("Telegram Playground")}</h1>
+
+  <%= for message <- Enum.reverse(@messages) do %>
+    <p><strong>{message.from}:</strong>{message.text}</p>
+  <% end %>
+</section>

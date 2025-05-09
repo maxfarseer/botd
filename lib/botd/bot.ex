@@ -40,43 +40,31 @@ defmodule Botd.Bot do
       key
       |> Telegram.Api.request("getUpdates", offset: last_seen + 1, timeout: 30)
       |> case do
-        # Empty, typically a timeout. State returned unchanged.
         {:ok, []} ->
           state
 
-        # A response with content, exciting!
         {:ok, updates} ->
-          # Process our updates and return the latest update ID
           last_seen = handle_updates(updates, last_seen)
-
-          # Update the last_seen state so we only get new updates on the
-          # next check
           %{state | last_seen: last_seen}
       end
 
-    # Re-trigger the looping behavior
     next_loop()
     {:noreply, state}
   end
 
   defp handle_updates(updates, last_seen) do
     updates
-    # Process our updates
     |> Enum.map(fn update ->
       Logger.info("Update received: #{inspect(update)}")
 
-      # Offload the updates to whoever they may concern
       broadcast(update)
 
-      # Return the update ID so we can boil it down to a new last_seen
       update["update_id"]
     end)
-    # Get the highest seen id from the new updates or fall back to last_seen
     |> Enum.max(fn -> last_seen end)
   end
 
   defp broadcast(update) do
-    # Send each update to a topic for others to listen to.
     Phoenix.PubSub.broadcast!(Botd.PubSub, "telegram_bot_update", {:update, update})
   end
 

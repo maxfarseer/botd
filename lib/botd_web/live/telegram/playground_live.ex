@@ -1,4 +1,4 @@
-defmodule BotdWeb.TelegramController do
+defmodule BotdWeb.Telegram.PlaygroundLive do
   @moduledoc """
   This controller is used to handle Telegram bot interactions.
 
@@ -35,8 +35,24 @@ defmodule BotdWeb.TelegramController do
 
   @impl true
   def handle_info({:update, update}, socket) do
+    # proceed_message(update)
     {:noreply, assign(socket, messages: [to_message(update) | socket.assigns.messages])}
   end
+
+  # defp proceed_message(%{"message" => %{"text" => text}} = update) do
+  #   chat_id = get_in(update, ["message", "chat", "id"])
+
+  #   case text do
+  #     "/start" ->
+  #       Telegram.Api.request(token, "sendMessage", chat_id: chat_id, text: "Укажите имя персоны")
+
+  #     "/stop" ->
+  #       Botd.TelegramBot.send_message("Help message")
+
+  #     _ ->
+  #       Botd.TelegramBot.send_message("Unknown command")
+  #   end
+  # end
 
   defp to_message(%{"message" => message} = _update) do
     firstname = get_in(message, ["from", "first_name"])
@@ -52,18 +68,5 @@ defmodule BotdWeb.TelegramController do
 
     text = get_in(message, ["text"])
     %{from: from, text: text}
-  end
-
-  @impl true
-  def render(assigns) do
-    ~H"""
-    <section class="phx-hero">
-      <h1>{gettext("Telegram Playground")}</h1>
-
-      <%= for message <- Enum.reverse(@messages) do %>
-        <p><strong>{message.from}:</strong>{message.text}</p>
-      <% end %>
-    </section>
-    """
   end
 end

@@ -126,7 +126,7 @@ defmodule BotdWeb.Router do
 
     live_session :require_moderator,
       on_mount: [{BotdWeb.UserAuth, :ensure_authenticated}] do
-      live "/telegram", TelegramController, :playground
+      live "/telegram/playground", Telegram.PlaygroundLive, :index
     end
   end
 

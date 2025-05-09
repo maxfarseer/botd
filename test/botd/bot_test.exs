@@ -110,5 +110,33 @@ defmodule Botd.BotTest do
                }
              }
     end
+
+    test "unknown command do not remove correct values" do
+      chat_id = "1"
+      text = "whatever"
+      action = :oops
+
+      state = %{
+        chats: %{
+          chat_id => %{
+            state: :waiting_for_reason,
+            name: "John Doe",
+            death_date: "2023-10-01",
+            reason: nil
+          }
+        }
+      }
+
+      new_state = Bot.update_chat(state, action, chat_id, text)
+
+      assert new_state == %{
+               chat_id => %{
+                 state: :waiting_for_reason,
+                 name: "John Doe",
+                 death_date: "2023-10-01",
+                 reason: nil
+               }
+             }
+    end
   end
 end

@@ -98,7 +98,7 @@ defmodule Botd.Bot do
     new_state
   end
 
-  defp new_chat_state do
+  def new_chat_state do
     %{
       state: :waiting_for_name,
       name: nil,

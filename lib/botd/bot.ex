@@ -80,8 +80,6 @@ defmodule Botd.Bot do
       |> Enum.map(fn update ->
         Logger.info("Update received: #{inspect(update)}")
 
-        IO.inspect(update, label: "Update")
-
         chat_id = get_in(update, ["message", "chat", "id"])
 
         process_message_from_user(key, update, chat_id)
@@ -145,7 +143,7 @@ defmodule Botd.Bot do
           }
 
         _ ->
-          IO.inspect(action, label: "Unknown action")
+          Logger.warning("Unknown action: #{inspect(action)}")
           chat
       end
 

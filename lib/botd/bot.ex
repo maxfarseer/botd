@@ -67,22 +67,11 @@ defmodule Botd.Bot do
     {:noreply, state}
   end
 
-  # chats is a finite state machine
-  # chats = %{
-  #   chat_id => %{
-  #     state: :waiting_for_name,
-  #     name: nil
-  #   }
-  # }
-  defp handle_updates(key, updates, last_seen, _chats) do
+  defp handle_updates(key, updates, last_seen, chats) do
     calc_last_seen =
       updates
       |> Enum.map(fn update ->
         Logger.info("Update received: #{inspect(update)}")
-
-        chat_id = get_in(update, ["message", "chat", "id"])
-
-        process_message_from_user(key, update, chat_id)
 
         broadcast(update)
 
@@ -90,9 +79,12 @@ defmodule Botd.Bot do
       end)
       |> Enum.max(fn -> last_seen end)
 
+    ##
+    calc_new_chats = update_chats(key, updates, chats)
+
     new_state = %{
       last_seen: calc_last_seen,
-      chats: %{}
+      chats: calc_new_chats
     }
 
     new_state
@@ -100,59 +92,97 @@ defmodule Botd.Bot do
 
   def new_chat_state do
     %{
-      state: :waiting_for_name,
+      chat_id: nil,
+      step: :waiting_for_start,
       name: nil,
       death_date: nil,
       reason: nil
     }
   end
 
-  def update_chat(state, action, chat_id, text) do
-    chat = Map.get(state.chats, chat_id) || new_chat_state()
+  # def update_chat(chats, action, chat_id, text) do
+  #   # why
+  #   chat = Map.get(chats, chat_id) || new_chat_state()
 
-    next_chat =
-      case action do
-        :start ->
-          %{
-            chat
-            | state: :waiting_for_name,
-              name: nil,
-              death_date: nil,
-              reason: nil
-          }
+  #   next_chat =
+  #     case action do
+  #       :start ->
+  #         %{
+  #           chat
+  #           | state: :waiting_for_name,
+  #             name: nil,
+  #             death_date: nil,
+  #             reason: nil
+  #         }
 
-        :provide_name ->
-          %{
-            chat
-            | state: :waiting_for_death_date,
-              name: text
-          }
+  #       :provide_name ->
+  #         %{
+  #           chat
+  #           | state: :waiting_for_death_date,
+  #             name: text
+  #         }
 
-        :provide_death_date ->
-          %{
-            chat
-            | state: :waiting_for_reason,
-              death_date: text
-          }
+  #       :provide_death_date ->
+  #         %{
+  #           chat
+  #           | state: :waiting_for_reason,
+  #             death_date: text
+  #         }
 
-        :provide_reason ->
-          %{
-            chat
-            | state: :finished,
-              reason: text
-          }
+  #       :provide_reason ->
+  #         %{
+  #           chat
+  #           | state: :finished,
+  #             reason: text
+  #         }
 
-        _ ->
-          Logger.warning("Unknown action: #{inspect(action)}")
-          chat
-      end
+  #       _ ->
+  #         Logger.warning("Unknown action: #{inspect(action)}")
+  #         chat
+  #     end
 
-    chats = Map.put(state.chats, chat_id, next_chat)
-    chats
+  #   chats = Map.put(chats, chat_id, next_chat)
+  #   chats
+  # end
+
+  def make_next_step(step) do
+    case step do
+      :waiting_for_start ->
+        :waiting_for_name
+
+      :waiting_for_name ->
+        :waiting_for_death_date
+
+      :waiting_for_death_date ->
+        :waiting_for_reason
+
+      :waiting_for_reason ->
+        :finished
+
+      _ ->
+        Logger.warning("Unknown chat step: #{inspect(step)}")
+        step
+    end
   end
 
-  def get_state!(state, chat_id) do
-    Map.get(state.chats, chat_id)
+  def update_chats(key, updates, chats) do
+    updates
+    |> Enum.map(fn u ->
+      chat_id = get_in(u, ["message", "chat", "id"])
+      _text = get_in(u, ["message", "text"])
+      chat = get_chat!(chats, chat_id)
+
+      new_chat_state = process_message_from_user(key, u, chat, chat_id)
+
+      %{new_chat_state | chat_id: chat_id}
+    end)
+    |> Enum.reduce(chats, fn chat, chats ->
+      Map.put(chats, chat.chat_id, chat)
+    end)
+  end
+
+  def get_chat!(chats, chat_id) do
+    Map.get(chats, chat_id) || new_chat_state()
   end
 
   defp broadcast(update) do
@@ -163,18 +193,51 @@ defmodule Botd.Bot do
     Process.send_after(self(), :check, 0)
   end
 
-  defp process_message_from_user(key, update, chat_id) do
-    # state = get_state!(state, chat_id)
+  defp process_message_from_user(key, update, chat, chat_id) do
+    case chat.step do
+      :waiting_for_start ->
+        _text = get_in(update, ["message", "text"])
+        # if /start ...
+        next_step = make_next_step(:waiting_for_start)
 
-    case get_in(update, ["message", "text"]) do
-      "/start" ->
-        answer_on_message(key, chat_id, "Укажите имя персоны")
+        # side effect
+        answer_on_message(key, chat_id, "Укажите имя")
 
-      "/stop" ->
-        answer_on_message(key, chat_id, "Бот остановлен")
+        %{chat | step: next_step}
+
+      :waiting_for_name ->
+        name = get_in(update, ["message", "text"])
+        next_step = make_next_step(:waiting_for_name)
+
+        # side effect
+        answer_on_message(key, chat_id, "Укажите дату смерти")
+
+        %{chat | step: next_step, name: name}
+
+      :waiting_for_death_date ->
+        death_date = get_in(update, ["message", "text"])
+        next_step = make_next_step(:waiting_for_death_date)
+
+        # side effect
+        answer_on_message(key, chat_id, "Укажите причину")
+
+        %{chat | step: next_step, death_date: death_date}
+
+      :waiting_for_reason ->
+        reason = get_in(update, ["message", "text"])
+        next_step = make_next_step(:waiting_for_reason)
+
+        # side effect
+        answer_on_message(key, chat_id, "проверьте данные")
+
+        %{chat | step: next_step, reason: reason}
+
+      :finished ->
+        IO.inspect(chat)
 
       _ ->
-        answer_on_message(key, chat_id, "Unknown command")
+        Logger.warning("Unknown state: #{inspect(chat.step)}")
+        chat
     end
   end
 

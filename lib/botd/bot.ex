@@ -100,50 +100,12 @@ defmodule Botd.Bot do
     }
   end
 
-  # def update_chat(chats, action, chat_id, text) do
-  #   # why
-  #   chat = Map.get(chats, chat_id) || new_chat_state()
-
-  #   next_chat =
-  #     case action do
-  #       :start ->
-  #         %{
-  #           chat
-  #           | state: :waiting_for_name,
-  #             name: nil,
-  #             death_date: nil,
-  #             reason: nil
-  #         }
-
-  #       :provide_name ->
-  #         %{
-  #           chat
-  #           | state: :waiting_for_death_date,
-  #             name: text
-  #         }
-
-  #       :provide_death_date ->
-  #         %{
-  #           chat
-  #           | state: :waiting_for_reason,
-  #             death_date: text
-  #         }
-
-  #       :provide_reason ->
-  #         %{
-  #           chat
-  #           | state: :finished,
-  #             reason: text
-  #         }
-
-  #       _ ->
-  #         Logger.warning("Unknown action: #{inspect(action)}")
-  #         chat
-  #     end
-
-  #   chats = Map.put(chats, chat_id, next_chat)
-  #   chats
-  # end
+  # @steps %{
+  #   :waiting_for_start => :waiting_for_name,
+  #   :waiting_for_name => :waiting_for_death_date,
+  #   :waiting_for_death_date => :waiting_for_reason,
+  #   :waiting_for_reason => :finished,
+  # }
 
   def make_next_step(step) do
     case step do
@@ -178,6 +140,8 @@ defmodule Botd.Bot do
     end)
     |> Enum.reduce(chats, fn chat, chats ->
       Map.put(chats, chat.chat_id, chat)
+      # after new tests check if the same
+      # Map.merge(chat, chats)
     end)
   end
 
@@ -193,23 +157,27 @@ defmodule Botd.Bot do
     Process.send_after(self(), :check, 0)
   end
 
-  defp process_message_from_user(key, update, chat, chat_id) do
+  def process_message_from_user(key, update, chat, chat_id) do
     case chat.step do
       :waiting_for_start ->
-        _text = get_in(update, ["message", "text"])
-        # if /start ...
-        next_step = make_next_step(:waiting_for_start)
+        text = get_in(update, ["message", "text"])
 
-        # side effect
-        answer_on_message(key, chat_id, "Укажите имя")
+        if text == "/start" do
+          next_step = make_next_step(:waiting_for_start)
 
-        %{chat | step: next_step}
+          answer_on_message(key, chat_id, "Укажите имя")
+
+          %{chat | step: next_step}
+        else
+          answer_on_message(key, chat_id, "Для начала работы введите /start")
+
+          chat
+        end
 
       :waiting_for_name ->
         name = get_in(update, ["message", "text"])
         next_step = make_next_step(:waiting_for_name)
 
-        # side effect
         answer_on_message(key, chat_id, "Укажите дату смерти")
 
         %{chat | step: next_step, name: name}
@@ -218,7 +186,6 @@ defmodule Botd.Bot do
         death_date = get_in(update, ["message", "text"])
         next_step = make_next_step(:waiting_for_death_date)
 
-        # side effect
         answer_on_message(key, chat_id, "Укажите причину")
 
         %{chat | step: next_step, death_date: death_date}
@@ -227,13 +194,25 @@ defmodule Botd.Bot do
         reason = get_in(update, ["message", "text"])
         next_step = make_next_step(:waiting_for_reason)
 
-        # side effect
-        answer_on_message(key, chat_id, "проверьте данные")
+        answer_on_message(key, chat_id, "все готово")
 
-        %{chat | step: next_step, reason: reason}
+        updated_chat = %{chat | step: next_step, reason: reason}
+
+        total =
+          %{
+            "Имя" => updated_chat.name,
+            "Дата смерти" => updated_chat.death_date,
+            "Причина" => updated_chat.reason
+          }
+          |> Enum.map_join("\n", fn {key, value} -> "#{key}: #{value}" end)
+
+        answer_on_message(key, chat_id, total)
+
+        updated_chat
 
       :finished ->
-        IO.inspect(chat)
+        Logger.info("chat finished", chat)
+        chat
 
       _ ->
         Logger.warning("Unknown state: #{inspect(chat.step)}")

@@ -2,145 +2,65 @@ defmodule Botd.BotTest do
   use Botd.DataCase, async: true
   alias Botd.Bot
 
-  def initialise_state do
-    %{
-      last_seen: 0,
-      chats: %{}
-    }
+  describe "process_message_from_user/4" do
+    setup do
+      key = "dummy_key"
+      chat_id = 12_345
+      {:ok, key: key, chat_id: chat_id}
+    end
+
+    test "handles :waiting_for_start step", %{key: key, chat_id: chat_id} do
+      chat = %{step: :waiting_for_start}
+      update = %{"message" => %{"text" => "/start"}}
+
+      result = Bot.process_message_from_user(key, update, chat, chat_id)
+
+      assert result.step == :waiting_for_name
+    end
+
+    test "handles :waiting_for_name step", %{key: key, chat_id: chat_id} do
+      chat = %{step: :waiting_for_name, name: nil}
+      update = %{"message" => %{"text" => "John Doe"}}
+
+      result = Bot.process_message_from_user(key, update, chat, chat_id)
+
+      assert result.step == :waiting_for_death_date
+      assert result.name == "John Doe"
+    end
+
+    test "handles :waiting_for_death_date step", %{key: key, chat_id: chat_id} do
+      chat = %{step: :waiting_for_death_date, name: "any", death_date: nil}
+      update = %{"message" => %{"text" => "2025-05-11"}}
+
+      result = Bot.process_message_from_user(key, update, chat, chat_id)
+
+      assert result.step == :waiting_for_reason
+      assert result.death_date == "2025-05-11"
+    end
+
+    test "handles :waiting_for_reason step", %{key: key, chat_id: chat_id} do
+      chat = %{step: :waiting_for_reason, name: "any", death_date: "any", reason: "accident"}
+      update = %{"message" => %{"text" => "Accident"}}
+
+      result = Bot.process_message_from_user(key, update, chat, chat_id)
+
+      assert result.step == :finished
+      assert result.reason == "Accident"
+    end
+
+    test "handles :finished state, will removed later", %{key: key, chat_id: chat_id} do
+      chat = %{step: :finished, name: "any", death_date: "any", reason: "any"}
+      update = %{"message" => %{"text" => "Some text"}}
+
+      result = Bot.process_message_from_user(key, update, chat, chat_id)
+
+      assert result == chat
+    end
   end
 
-  describe "bot finite state machine" do
-    test "User started a dialogue" do
-      chat_id = "1"
-
-      state = initialise_state()
-
-      updated_chats = Bot.update_chat(state, :start, chat_id, "/start")
-
-      assert updated_chats == %{
-               chat_id => %{
-                 state: :waiting_for_name,
-                 name: nil,
-                 death_date: nil,
-                 reason: nil
-               }
-             }
-    end
-
-    test "User typed the name" do
-      chat_id = "1"
-      text = "John Doe"
-      action = :provide_name
-
-      state = %{
-        chats: %{
-          chat_id => %{
-            state: :waiting_for_name,
-            name: nil,
-            death_date: nil,
-            reason: nil
-          }
-        }
-      }
-
-      new_state = Bot.update_chat(state, action, chat_id, text)
-
-      assert new_state == %{
-               chat_id => %{
-                 state: :waiting_for_death_date,
-                 name: text,
-                 death_date: nil,
-                 reason: nil
-               }
-             }
-    end
-
-    test "User typed the date of the death" do
-      chat_id = "1"
-      text = "2023-10-01"
-      action = :provide_death_date
-
-      state = %{
-        chats: %{
-          chat_id => %{
-            state: :waiting_for_death_date,
-            name: "John Doe",
-            death_date: nil,
-            reason: nil
-          }
-        }
-      }
-
-      new_state = Bot.update_chat(state, action, chat_id, text)
-
-      assert new_state == %{
-               chat_id => %{
-                 state: :waiting_for_reason,
-                 name: "John Doe",
-                 death_date: text,
-                 reason: nil
-               }
-             }
-    end
-
-    test "User typed the reason of the death" do
-      chat_id = "1"
-      text = "Natural causes"
-      action = :provide_reason
-
-      state = %{
-        chats: %{
-          chat_id => %{
-            state: :waiting_for_reason,
-            name: "John Doe",
-            death_date: "2023-10-01",
-            reason: nil
-          }
-        }
-      }
-
-      new_state = Bot.update_chat(state, action, chat_id, text)
-
-      assert new_state == %{
-               chat_id => %{
-                 state: :finished,
-                 name: "John Doe",
-                 death_date: "2023-10-01",
-                 reason: text
-               }
-             }
-    end
-
-    test "unknown command do not remove correct values" do
-      chat_id = "1"
-      text = "whatever"
-      action = :oops
-
-      state = %{
-        chats: %{
-          chat_id => %{
-            state: :waiting_for_reason,
-            name: "John Doe",
-            death_date: "2023-10-01",
-            reason: nil
-          }
-        }
-      }
-
-      new_state = Bot.update_chat(state, action, chat_id, text)
-
-      assert new_state == %{
-               chat_id => %{
-                 state: :waiting_for_reason,
-                 name: "John Doe",
-                 death_date: "2023-10-01",
-                 reason: nil
-               }
-             }
-    end
-
+  describe "update_chats" do
     test "update chats" do
-      update = [
+      updates = [
         %{
           "message" => %{
             "chat" => %{
@@ -187,16 +107,19 @@ defmodule Botd.BotTest do
               "username" => "anotherp"
             },
             "message_id" => 178,
-            "text" => "/stop"
+            "text" => "WHATEVER"
           },
           "update_id" => 597_970_407
         }
       ]
 
+      key = "fake_telegram_token"
+
       chats = %{}
 
-      new_chats = Bot.update_chats(update, chats)
-      IO.inspect(new_chats)
+      new_chats = Bot.update_chats(key, updates, chats)
+
+      new_chats
     end
   end
 end

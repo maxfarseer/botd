@@ -15,6 +15,15 @@ defmodule Botd.BotTest do
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
 
+      assert result.step == :selected_action
+    end
+
+    test "handles action", %{key: key, chat_id: chat_id} do
+      chat = %{step: :selected_action}
+      update = %{"message" => %{"text" => "Добавить"}}
+
+      result = Bot.process_message_from_user(key, update, chat, chat_id)
+
       assert result.step == :waiting_for_name
     end
 

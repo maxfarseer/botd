@@ -109,7 +109,13 @@ defmodule Botd.Bot do
 
   def make_next_step(step) do
     case step do
+      :reset ->
+        :waiting_for_start
+
       :waiting_for_start ->
+        :selected_action
+
+      :selected_add_person ->
         :waiting_for_name
 
       :waiting_for_name ->
@@ -120,6 +126,9 @@ defmodule Botd.Bot do
 
       :waiting_for_reason ->
         :finished
+
+      :finished ->
+        :after_finished
 
       _ ->
         Logger.warning("Unknown chat step: #{inspect(step)}")
@@ -157,20 +166,58 @@ defmodule Botd.Bot do
     Process.send_after(self(), :check, 0)
   end
 
+  def send_menu do
+    keyboard = [
+      ["Добавить"]
+    ]
+
+    keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+
+    keyboard_markup
+  end
+
+  def finished_menu do
+    keyboard = [
+      ["Отправить"],
+      ["Редактировать", "Удалить"],
+      ["Внести новую запись в книгу"]
+    ]
+
+    keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+
+    keyboard_markup
+  end
+
   def process_message_from_user(key, update, chat, chat_id) do
     case chat.step do
       :waiting_for_start ->
         text = get_in(update, ["message", "text"])
 
         if text == "/start" do
-          next_step = make_next_step(:waiting_for_start)
+          Telegram.Api.request(key, "sendMessage",
+            chat_id: chat_id,
+            text: "Выберите действие",
+            reply_markup: {:json, send_menu()}
+          )
 
-          answer_on_message(key, chat_id, "Укажите имя")
+          next_step = make_next_step(:waiting_for_start)
 
           %{chat | step: next_step}
         else
           answer_on_message(key, chat_id, "Для начала работы введите /start")
 
+          chat
+        end
+
+      :selected_action ->
+        text = get_in(update, ["message", "text"])
+
+        if text == "Добавить" do
+          answer_on_message(key, chat_id, "Укажите имя")
+          next_step = make_next_step(:selected_add_person)
+          %{chat | step: next_step}
+        else
+          answer_on_message(key, chat_id, "В данный момент доступно только добавление")
           chat
         end
 
@@ -194,7 +241,7 @@ defmodule Botd.Bot do
         reason = get_in(update, ["message", "text"])
         next_step = make_next_step(:waiting_for_reason)
 
-        answer_on_message(key, chat_id, "все готово")
+        answer_on_message(key, chat_id, "Вы ввели данные:")
 
         updated_chat = %{chat | step: next_step, reason: reason}
 
@@ -208,11 +255,30 @@ defmodule Botd.Bot do
 
         answer_on_message(key, chat_id, total)
 
+        Telegram.Api.request(key, "sendMessage",
+          chat_id: chat_id,
+          text: "Выберите действие",
+          reply_markup: {:json, finished_menu()}
+        )
+
         updated_chat
 
       :finished ->
-        Logger.info("chat finished", chat)
-        chat
+        text = get_in(update, ["message", "text"])
+
+        case text do
+          "Отправить" ->
+            Logger.info("suggest")
+            chat
+
+          "Внести новую запись в книгу" ->
+            next_step = make_next_step(:reset)
+            %{chat | step: next_step}
+
+          _ ->
+            answer_on_message(key, chat_id, "Действие в разработке")
+            chat
+        end
 
       _ ->
         Logger.warning("Unknown state: #{inspect(chat.step)}")

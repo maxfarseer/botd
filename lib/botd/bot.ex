@@ -2,6 +2,7 @@ defmodule Botd.Bot do
   @moduledoc """
   This module is responsible for handling the Telegram bot interactions.
   """
+  alias Botd.People
 
   use GenServer
   require Logger
@@ -231,11 +232,12 @@ defmodule Botd.Bot do
 
       :waiting_for_death_date ->
         death_date = get_in(update, ["message", "text"])
+        {:ok, parsed_date} = Date.from_iso8601(death_date)
         next_step = make_next_step(:waiting_for_death_date)
 
         answer_on_message(key, chat_id, "Укажите причину")
 
-        %{chat | step: next_step, death_date: death_date}
+        %{chat | step: next_step, death_date: parsed_date}
 
       :waiting_for_reason ->
         reason = get_in(update, ["message", "text"])
@@ -268,7 +270,22 @@ defmodule Botd.Bot do
 
         case text do
           "Отправить" ->
-            Logger.info("suggest")
+            # Extrahiere Attribute aus dem Chat-State
+            attributes = %{
+              name: chat.name,
+              death_date: chat.death_date,
+              cause_of_death: chat.reason
+            }
+
+            # Rufe die Funktion mit den Attributen auf
+            case People.create_person(attributes) do
+              {:ok, _person} ->
+                answer_on_message(key, chat_id, "Данные успешно сохранены!")
+
+              {:error, _changeset} ->
+                answer_on_message(key, chat_id, "Ошибка при сохранении данных.")
+            end
+
             chat
 
           "Внести новую запись в книгу" ->

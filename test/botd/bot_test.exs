@@ -44,7 +44,7 @@ defmodule Botd.BotTest do
       result = Bot.process_message_from_user(key, update, chat, chat_id)
 
       assert result.step == :waiting_for_reason
-      assert result.death_date == "2025-05-11"
+      assert result.death_date == ~D[2025-05-11]
     end
 
     test "handles :waiting_for_reason step", %{key: key, chat_id: chat_id} do

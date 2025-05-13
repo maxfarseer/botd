@@ -2,7 +2,8 @@ defmodule Botd.Bot do
   @moduledoc """
   This module is responsible for handling the Telegram bot interactions.
   """
-  alias Botd.People
+  alias Botd.Accounts
+  alias Botd.Suggestions
 
   use GenServer
   require Logger
@@ -270,20 +271,22 @@ defmodule Botd.Bot do
 
         case text do
           "Отправить" ->
-            # Extrahiere Attribute aus dem Chat-State
             attributes = %{
-              name: chat.name,
-              death_date: chat.death_date,
-              cause_of_death: chat.reason
+              "name" => chat.name,
+              "death_date" => chat.death_date,
+              "cause_of_death" => chat.reason,
+              "place" => "Hardcoded place"
             }
 
-            # Rufe die Funktion mit den Attributen auf
-            case People.create_person(attributes) do
-              {:ok, _person} ->
-                answer_on_message(key, chat_id, "Данные успешно сохранены!")
+            user = Accounts.get_user_by_email("telegram@bot.com")
 
-              {:error, _changeset} ->
-                answer_on_message(key, chat_id, "Ошибка при сохранении данных.")
+            case Suggestions.create_suggestion(attributes, user) do
+              {:ok, _suggestion} ->
+                answer_on_message(key, chat_id, "Данные успешно отправлены на модерацию!")
+
+              {:error, changeset} ->
+                Logger.error("Error creating suggestion: #{inspect(changeset)}")
+                answer_on_message(key, chat_id, "Ошибка при отправке данных.")
             end
 
             chat

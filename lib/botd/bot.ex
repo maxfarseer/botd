@@ -93,17 +93,12 @@ defmodule Botd.Bot do
   end
 
   def update_chats(key, updates, chats) do
-    updates
-    |> Enum.map(fn u ->
-      chat_id = get_in(u, ["message", "chat", "id"])
-      chat = get_chat!(chats, chat_id)
-      new_chat_state = Chat.process_message_from_user(key, u, chat, chat_id)
-      %Chat{new_chat_state | chat_id: chat_id}
-    end)
-    |> Enum.reduce(chats, fn chat, chats ->
-      Map.put(chats, chat.chat_id, chat)
-      # after new tests check if the same
-      # Map.merge(chat, chats)
+    Enum.reduce(updates, chats, fn update, acc ->
+      chat_id = get_in(update, ["message", "chat", "id"])
+      chat = Map.get(acc, chat_id, Chat.init_state())
+
+      new_chat_state = Chat.process_message_from_user(key, update, chat, chat_id)
+      Map.put(acc, chat_id, %Chat{new_chat_state | chat_id: chat_id})
     end)
   end
 

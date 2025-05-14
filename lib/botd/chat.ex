@@ -23,18 +23,6 @@ defmodule Botd.Chat do
   defp make_next_step(:waiting_for_death_date), do: :waiting_for_reason
   defp make_next_step(:waiting_for_reason), do: :finished
 
-  def process_message_from_user(key, update, chat, chat_id) do
-    case chat.step do
-      :waiting_for_start -> handle_waiting_for_start(key, update, chat, chat_id)
-      :selected_action -> handle_selected_action(key, update, chat, chat_id)
-      :waiting_for_name -> handle_waiting_for_name(key, update, chat, chat_id)
-      :waiting_for_death_date -> handle_waiting_for_death_date(key, update, chat, chat_id)
-      :waiting_for_reason -> handle_waiting_for_reason(key, update, chat, chat_id)
-      :finished -> handle_finished(key, update, chat, chat_id)
-      _ -> handle_unknown_state(chat)
-    end
-  end
-
   defp handle_waiting_for_start(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
 
@@ -115,16 +103,19 @@ defmodule Botd.Chat do
   end
 
   defp handle_finished(key, update, chat, chat_id) do
+    username = get_user_name(update)
     text = get_in(update, ["message", "text"])
 
     case text do
       "Отправить" ->
-        attributes = %{
-          "name" => chat.name,
-          "death_date" => chat.death_date,
-          "cause_of_death" => chat.reason,
-          "place" => "Hardcoded place"
-        }
+        attributes =
+          %{
+            "name" => chat.name,
+            "death_date" => chat.death_date,
+            "cause_of_death" => chat.reason,
+            "place" => "Hardcoded place",
+            "telegram_username" => username
+          }
 
         user = Accounts.get_user_by_email("telegram@bot.com")
 
@@ -181,5 +172,32 @@ defmodule Botd.Chat do
     keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
 
     keyboard_markup
+  end
+
+  def process_message_from_user(key, update, chat, chat_id) do
+    case chat.step do
+      :waiting_for_start -> handle_waiting_for_start(key, update, chat, chat_id)
+      :selected_action -> handle_selected_action(key, update, chat, chat_id)
+      :waiting_for_name -> handle_waiting_for_name(key, update, chat, chat_id)
+      :waiting_for_death_date -> handle_waiting_for_death_date(key, update, chat, chat_id)
+      :waiting_for_reason -> handle_waiting_for_reason(key, update, chat, chat_id)
+      :finished -> handle_finished(key, update, chat, chat_id)
+      _ -> handle_unknown_state(chat)
+    end
+  end
+
+  def get_user_name(%{"message" => message} = _update) do
+    firstname = get_in(message, ["from", "first_name"])
+    lastname = get_in(message, ["from", "last_name"])
+    username = get_in(message, ["from", "username"])
+
+    from =
+      case {firstname, lastname, username} do
+        {nil, _, username} -> username
+        {firstname, nil, username} -> "#{firstname} (#{username})"
+        {firstname, lastname, username} -> "#{firstname} #{lastname} (#{username})"
+      end
+
+    from
   end
 end

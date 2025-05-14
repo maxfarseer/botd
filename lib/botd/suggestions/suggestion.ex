@@ -19,6 +19,7 @@ defmodule Botd.Suggestions.Suggestion do
     field :place, :string
     field :status, Ecto.Enum, values: @statuses, default: :pending
     field :notes, :string
+    field :telegram_username, :string
 
     belongs_to :user, Botd.Accounts.User
     belongs_to :reviewed_by, Botd.Accounts.User
@@ -28,8 +29,18 @@ defmodule Botd.Suggestions.Suggestion do
 
   def changeset(suggestion, attrs) do
     suggestion
-    |> cast(attrs, [:name, :death_date, :place, :status, :notes, :user_id, :reviewed_by_id])
-    |> validate_required([:name, :death_date, :place, :user_id])
+    |> cast(attrs, [
+      :name,
+      :death_date,
+      :place,
+      :status,
+      :notes,
+      :user_id,
+      :reviewed_by_id,
+      :telegram_username
+    ])
+    |> validate_required([:name, :death_date, :user_id])
+    |> validate_length(:telegram_username, max: 200)
     |> validate_inclusion(:status, @statuses)
   end
 end

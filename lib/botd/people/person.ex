@@ -18,6 +18,7 @@ defmodule Botd.People.Person do
     field :place, :string
     field :cause_of_death, :string
     field :description, :string
+    field :photo_url, :string
 
     timestamps()
   end
@@ -31,7 +32,8 @@ defmodule Botd.People.Person do
       :death_date,
       :place,
       :cause_of_death,
-      :description
+      :description,
+      :photo_url
     ])
     |> validate_required([:name, :death_date])
     |> validate_death_date_not_in_future()

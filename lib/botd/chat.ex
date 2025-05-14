@@ -11,7 +11,8 @@ defmodule Botd.Chat do
             step: :waiting_for_start,
             name: nil,
             death_date: nil,
-            reason: nil
+            reason: nil,
+            photo_url: nil
 
   def init_state do
     %__MODULE__{}
@@ -21,7 +22,8 @@ defmodule Botd.Chat do
   defp make_next_step(:selected_add_person), do: :waiting_for_name
   defp make_next_step(:waiting_for_name), do: :waiting_for_death_date
   defp make_next_step(:waiting_for_death_date), do: :waiting_for_reason
-  defp make_next_step(:waiting_for_reason), do: :finished
+  defp make_next_step(:waiting_for_reason), do: :waiting_for_photo
+  defp make_next_step(:waiting_for_photo), do: :finished
 
   defp handle_waiting_for_start(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
@@ -79,15 +81,40 @@ defmodule Botd.Chat do
     reason = get_in(update, ["message", "text"])
     next_step = make_next_step(:waiting_for_reason)
 
-    answer_on_message(key, chat_id, "Вы ввели данные:")
+    answer_on_message(key, chat_id, "Добавьте фото")
+    %__MODULE__{chat | step: next_step, reason: reason}
+  end
 
-    updated_chat = %__MODULE__{chat | step: next_step, reason: reason}
+  defp handle_photo_message(update) do
+    case get_in(update, ["message", "photo"]) do
+      nil ->
+        {:error, "No photo found"}
+
+      photos ->
+        # take the last photo in the list (highest resolution)
+        [%{"file_id" => file_id} | _] = Enum.reverse(photos)
+        {:ok, file_id}
+    end
+  end
+
+  defp get_file_url(key, file_id) do
+    case Telegram.Api.request(key, "getFile", %{file_id: file_id}) do
+      {:ok, %{"file_path" => file_path}} ->
+        {:ok, "https://api.telegram.org/file/bot#{key}/#{file_path}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp send_total(key, chat) do
+    chat_id = chat.chat_id
 
     total =
       %{
-        "Имя" => updated_chat.name,
-        "Дата смерти" => updated_chat.death_date,
-        "Причина" => updated_chat.reason
+        "Имя" => chat.name,
+        "Дата смерти" => chat.death_date,
+        "Причина" => chat.reason
       }
       |> Enum.map_join("\n", fn {key, value} -> "#{key}: #{value}" end)
 
@@ -98,8 +125,32 @@ defmodule Botd.Chat do
       text: "Выберите действие",
       reply_markup: {:json, finished_menu()}
     )
+  end
 
-    updated_chat
+  defp handle_waiting_for_photo(key, update, chat, chat_id) do
+    case handle_photo_message(update) do
+      {:ok, file_id} ->
+        case get_file_url(key, file_id) do
+          {:ok, file_url} ->
+            # save_photo_url_to_suggestion(chat.suggestion_id, file_url)
+
+            answer_on_message(key, chat_id, "Фото принято")
+            answer_on_message(key, chat_id, "Вы ввели данные:")
+            send_total(key, chat)
+            next_step = make_next_step(:waiting_for_photo)
+
+            %__MODULE__{chat | photo_url: file_url, step: next_step}
+
+          {:error, reason} ->
+            Logger.error("Error getting file URL: #{inspect(reason)}")
+            answer_on_message(key, chat_id, "Ошибка обработки фото, попробуйте еще раз.")
+            chat
+        end
+
+      {:error, _reason} ->
+        answer_on_message(key, chat_id, "Ошибка загрузки фото, попробуйте еще раз.")
+        chat
+    end
   end
 
   defp handle_finished(key, update, chat, chat_id) do
@@ -114,13 +165,15 @@ defmodule Botd.Chat do
             "death_date" => chat.death_date,
             "cause_of_death" => chat.reason,
             "place" => "Hardcoded place",
-            "telegram_username" => username
+            "telegram_username" => username,
+            "photo_url" => chat.photo_url
           }
 
         user = Accounts.get_user_by_email("telegram@bot.com")
 
         case Suggestions.create_suggestion(attributes, user) do
-          {:ok, _suggestion} ->
+          {:ok, suggestion} ->
+            Logger.info("Suggestion created: #{inspect(suggestion)}")
             answer_on_message(key, chat_id, "Данные успешно отправлены на модерацию!")
 
           {:error, changeset} ->
@@ -181,6 +234,7 @@ defmodule Botd.Chat do
       :waiting_for_name -> handle_waiting_for_name(key, update, chat, chat_id)
       :waiting_for_death_date -> handle_waiting_for_death_date(key, update, chat, chat_id)
       :waiting_for_reason -> handle_waiting_for_reason(key, update, chat, chat_id)
+      :waiting_for_photo -> handle_waiting_for_photo(key, update, chat, chat_id)
       :finished -> handle_finished(key, update, chat, chat_id)
       _ -> handle_unknown_state(chat)
     end

@@ -20,6 +20,7 @@ defmodule Botd.Suggestions.Suggestion do
     field :status, Ecto.Enum, values: @statuses, default: :pending
     field :notes, :string
     field :telegram_username, :string
+    field :photo_url, :string
 
     belongs_to :user, Botd.Accounts.User
     belongs_to :reviewed_by, Botd.Accounts.User
@@ -37,7 +38,8 @@ defmodule Botd.Suggestions.Suggestion do
       :notes,
       :user_id,
       :reviewed_by_id,
-      :telegram_username
+      :telegram_username,
+      :photo_url
     ])
     |> validate_required([:name, :death_date, :user_id])
     |> validate_length(:telegram_username, max: 200)

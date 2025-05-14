@@ -25,6 +25,12 @@
   </:actions>
 </.header>
 
+<%= if @person.photo_url do %>
+  <img src={@person.photo_url} alt="Person Photo" class="person-photo" />
+<% else %>
+  <p>No photo available</p>
+<% end %>
+
 <.list>
   <:item title="Name">{@person.name}</:item>
   <:item title="Nickname">{@person.nickname}</:item>

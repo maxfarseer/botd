@@ -64,7 +64,8 @@ defmodule Botd.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:nimble_csv, "~> 1.2"},
       {:scrivener_ecto, "~> 3.0.1"},
-      {:telegram, github: "visciang/telegram", tag: "2.1.0"}
+      {:telegram, github: "visciang/telegram", tag: "2.1.0"},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 

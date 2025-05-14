@@ -1,4 +1,4 @@
-defmodule BotdWeb.TelegramController do
+defmodule BotdWeb.Telegram.PlaygroundLive do
   @moduledoc """
   This controller is used to handle Telegram bot interactions.
 
@@ -52,18 +52,5 @@ defmodule BotdWeb.TelegramController do
 
     text = get_in(message, ["text"])
     %{from: from, text: text}
-  end
-
-  @impl true
-  def render(assigns) do
-    ~H"""
-    <section class="phx-hero">
-      <h1>{gettext("Telegram Playground")}</h1>
-
-      <%= for message <- Enum.reverse(@messages) do %>
-        <p><strong>{message.from}:</strong>{message.text}</p>
-      <% end %>
-    </section>
-    """
   end
 end

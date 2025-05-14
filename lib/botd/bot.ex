@@ -3,6 +3,8 @@ defmodule Botd.Bot do
   This module is responsible for handling the Telegram bot interactions.
   """
 
+  alias Botd.Chat
+
   use GenServer
   require Logger
 
@@ -21,7 +23,8 @@ defmodule Botd.Bot do
         state = %{
           bot_key: key,
           me: me,
-          last_seen: -2
+          last_seen: -2,
+          chats: %{}
         }
 
         next_loop()
@@ -35,48 +38,75 @@ defmodule Botd.Bot do
   end
 
   @impl GenServer
-  def handle_info(:check, %{bot_key: key, last_seen: last_seen} = state) do
+  def handle_info(
+        :check,
+        %{
+          bot_key: key,
+          last_seen: last_seen,
+          chats: chats
+        } = state
+      ) do
     state =
       key
       |> Telegram.Api.request("getUpdates", offset: last_seen + 1, timeout: 30)
       |> case do
-        # Empty, typically a timeout. State returned unchanged.
         {:ok, []} ->
           state
 
-        # A response with content, exciting!
         {:ok, updates} ->
-          # Process our updates and return the latest update ID
-          last_seen = handle_updates(updates, last_seen)
+          new_state =
+            handle_updates(
+              key,
+              updates,
+              last_seen,
+              chats
+            )
 
-          # Update the last_seen state so we only get new updates on the
-          # next check
-          %{state | last_seen: last_seen}
+          %{state | last_seen: new_state.last_seen, chats: new_state.chats}
       end
 
-    # Re-trigger the looping behavior
     next_loop()
     {:noreply, state}
   end
 
-  defp handle_updates(updates, last_seen) do
-    updates
-    # Process our updates
-    |> Enum.map(fn update ->
-      Logger.info("Update received: #{inspect(update)}")
+  defp handle_updates(key, updates, last_seen, chats) do
+    calc_last_seen =
+      updates
+      |> Enum.map(fn update ->
+        Logger.info("Update received: #{inspect(update)}")
 
-      # Offload the updates to whoever they may concern
-      broadcast(update)
+        broadcast(update)
 
-      # Return the update ID so we can boil it down to a new last_seen
-      update["update_id"]
+        update["update_id"]
+      end)
+      |> Enum.max(fn -> last_seen end)
+
+    ##
+    calc_new_chats = update_chats(key, updates, chats)
+
+    new_state = %{
+      last_seen: calc_last_seen,
+      chats: calc_new_chats
+    }
+
+    new_state
+  end
+
+  def update_chats(key, updates, chats) do
+    Enum.reduce(updates, chats, fn update, acc ->
+      chat_id = get_in(update, ["message", "chat", "id"])
+      chat = Map.get(acc, chat_id, Chat.init_state())
+
+      new_chat_state = Chat.process_message_from_user(key, update, chat, chat_id)
+      Map.put(acc, chat_id, %Chat{new_chat_state | chat_id: chat_id})
     end)
-    # Get the highest seen id from the new updates or fall back to last_seen
-    |> Enum.max(fn -> last_seen end)
+  end
+
+  def get_chat!(chats, chat_id) do
+    Map.get(chats, chat_id) || Chat.init_state()
   end
 
   defp broadcast(update) do
-    # Send each update to a topic for others to listen to.
     Phoenix.PubSub.broadcast!(Botd.PubSub, "telegram_bot_update", {:update, update})
   end
 

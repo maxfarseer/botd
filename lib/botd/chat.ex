@@ -37,118 +37,133 @@ defmodule Botd.Chat do
 
   def process_message_from_user(key, update, chat, chat_id) do
     case chat.step do
-      :waiting_for_start ->
-        text = get_in(update, ["message", "text"])
+      :waiting_for_start -> handle_waiting_for_start(key, update, chat, chat_id)
+      :selected_action -> handle_selected_action(key, update, chat, chat_id)
+      :waiting_for_name -> handle_waiting_for_name(key, update, chat, chat_id)
+      :waiting_for_death_date -> handle_waiting_for_death_date(key, update, chat, chat_id)
+      :waiting_for_reason -> handle_waiting_for_reason(key, update, chat, chat_id)
+      :finished -> handle_finished(key, update, chat, chat_id)
+      _ -> handle_unknown_state(chat)
+    end
+  end
 
-        if text == "/start" do
-          Telegram.Api.request(key, "sendMessage",
-            chat_id: chat_id,
-            text: "Выберите действие",
-            reply_markup: {:json, send_menu()}
-          )
+  def handle_waiting_for_start(key, update, chat, chat_id) do
+    text = get_in(update, ["message", "text"])
 
-          next_step = make_next_step(:waiting_for_start)
+    if text == "/start" do
+      Telegram.Api.request(key, "sendMessage",
+        chat_id: chat_id,
+        text: "Выберите действие",
+        reply_markup: {:json, send_menu()}
+      )
 
-          %__MODULE__{chat | step: next_step}
-        else
-          answer_on_message(key, chat_id, "Для начала работы введите /start")
+      next_step = make_next_step(:waiting_for_start)
 
-          chat
+      %__MODULE__{chat | step: next_step}
+    else
+      answer_on_message(key, chat_id, "Для начала работы введите /start")
+
+      chat
+    end
+  end
+
+  def handle_selected_action(key, update, chat, chat_id) do
+    text = get_in(update, ["message", "text"])
+
+    if text == "Добавить" do
+      answer_on_message(key, chat_id, "Укажите имя")
+      next_step = make_next_step(:selected_add_person)
+      %__MODULE__{chat | step: next_step}
+    else
+      answer_on_message(key, chat_id, "В данный момент доступно только добавление")
+      chat
+    end
+  end
+
+  def handle_waiting_for_name(key, update, chat, chat_id) do
+    name = get_in(update, ["message", "text"])
+    next_step = make_next_step(:waiting_for_name)
+
+    answer_on_message(key, chat_id, "Укажите дату смерти")
+
+    %__MODULE__{chat | step: next_step, name: name}
+  end
+
+  def handle_waiting_for_death_date(key, update, chat, chat_id) do
+    death_date = get_in(update, ["message", "text"])
+    {:ok, parsed_date} = Date.from_iso8601(death_date)
+    next_step = make_next_step(:waiting_for_death_date)
+
+    answer_on_message(key, chat_id, "Укажите причину")
+
+    %__MODULE__{chat | step: next_step, death_date: parsed_date}
+  end
+
+  def handle_waiting_for_reason(key, update, chat, chat_id) do
+    reason = get_in(update, ["message", "text"])
+    next_step = make_next_step(:waiting_for_reason)
+
+    answer_on_message(key, chat_id, "Вы ввели данные:")
+
+    updated_chat = %__MODULE__{chat | step: next_step, reason: reason}
+
+    total =
+      %{
+        "Имя" => updated_chat.name,
+        "Дата смерти" => updated_chat.death_date,
+        "Причина" => updated_chat.reason
+      }
+      |> Enum.map_join("\n", fn {key, value} -> "#{key}: #{value}" end)
+
+    answer_on_message(key, chat_id, total)
+
+    Telegram.Api.request(key, "sendMessage",
+      chat_id: chat_id,
+      text: "Выберите действие",
+      reply_markup: {:json, finished_menu()}
+    )
+
+    updated_chat
+  end
+
+  def handle_finished(key, update, chat, chat_id) do
+    text = get_in(update, ["message", "text"])
+
+    case text do
+      "Отправить" ->
+        attributes = %{
+          "name" => chat.name,
+          "death_date" => chat.death_date,
+          "cause_of_death" => chat.reason,
+          "place" => "Hardcoded place"
+        }
+
+        user = Accounts.get_user_by_email("telegram@bot.com")
+
+        case Suggestions.create_suggestion(attributes, user) do
+          {:ok, _suggestion} ->
+            answer_on_message(key, chat_id, "Данные успешно отправлены на модерацию!")
+
+          {:error, changeset} ->
+            Logger.error("Error creating suggestion: #{inspect(changeset)}")
+            answer_on_message(key, chat_id, "Ошибка при отправке данных.")
         end
 
-      :selected_action ->
-        text = get_in(update, ["message", "text"])
+        chat
 
-        if text == "Добавить" do
-          answer_on_message(key, chat_id, "Укажите имя")
-          next_step = make_next_step(:selected_add_person)
-          %{chat | step: next_step}
-        else
-          answer_on_message(key, chat_id, "В данный момент доступно только добавление")
-          chat
-        end
-
-      :waiting_for_name ->
-        name = get_in(update, ["message", "text"])
-        next_step = make_next_step(:waiting_for_name)
-
-        answer_on_message(key, chat_id, "Укажите дату смерти")
-
-        %__MODULE__{chat | step: next_step, name: name}
-
-      :waiting_for_death_date ->
-        death_date = get_in(update, ["message", "text"])
-        {:ok, parsed_date} = Date.from_iso8601(death_date)
-        next_step = make_next_step(:waiting_for_death_date)
-
-        answer_on_message(key, chat_id, "Укажите причину")
-
-        %{chat | step: next_step, death_date: parsed_date}
-
-      :waiting_for_reason ->
-        reason = get_in(update, ["message", "text"])
-        next_step = make_next_step(:waiting_for_reason)
-
-        answer_on_message(key, chat_id, "Вы ввели данные:")
-
-        updated_chat = %__MODULE__{chat | step: next_step, reason: reason}
-
-        total =
-          %{
-            "Имя" => updated_chat.name,
-            "Дата смерти" => updated_chat.death_date,
-            "Причина" => updated_chat.reason
-          }
-          |> Enum.map_join("\n", fn {key, value} -> "#{key}: #{value}" end)
-
-        answer_on_message(key, chat_id, total)
-
-        Telegram.Api.request(key, "sendMessage",
-          chat_id: chat_id,
-          text: "Выберите действие",
-          reply_markup: {:json, finished_menu()}
-        )
-
-        updated_chat
-
-      :finished ->
-        text = get_in(update, ["message", "text"])
-
-        case text do
-          "Отправить" ->
-            attributes = %{
-              "name" => chat.name,
-              "death_date" => chat.death_date,
-              "cause_of_death" => chat.reason,
-              "place" => "Hardcoded place"
-            }
-
-            user = Accounts.get_user_by_email("telegram@bot.com")
-
-            case Suggestions.create_suggestion(attributes, user) do
-              {:ok, _suggestion} ->
-                answer_on_message(key, chat_id, "Данные успешно отправлены на модерацию!")
-
-              {:error, changeset} ->
-                Logger.error("Error creating suggestion: #{inspect(changeset)}")
-                answer_on_message(key, chat_id, "Ошибка при отправке данных.")
-            end
-
-            chat
-
-          "Внести новую запись в книгу" ->
-            next_step = make_next_step(:waiting_for_start)
-            %__MODULE__{chat | step: next_step}
-
-          _ ->
-            answer_on_message(key, chat_id, "Действие в разработке")
-            chat
-        end
+      "Внести новую запись в книгу" ->
+        next_step = make_next_step(:waiting_for_start)
+        %__MODULE__{chat | step: next_step}
 
       _ ->
-        Logger.warning("Unknown state: #{inspect(chat.step)}")
+        answer_on_message(key, chat_id, "Действие в разработке")
         chat
     end
+  end
+
+  def handle_unknown_state(chat) do
+    Logger.warning("Unknown chat state: #{inspect(chat)}")
+    chat
   end
 
   defp answer_on_message(key, chat_id, text) do

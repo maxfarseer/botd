@@ -1,7 +1,7 @@
 defmodule Botd.BotTest do
+  alias Botd.Bot
   alias Botd.Chat
   use Botd.DataCase, async: true
-  alias Botd.Bot
 
   describe "process_message_from_user/4" do
     setup do
@@ -14,7 +14,7 @@ defmodule Botd.BotTest do
       chat = %Chat{step: :waiting_for_start}
       update = %{"message" => %{"text" => "/start"}}
 
-      result = Bot.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat, chat_id)
 
       assert result.step == :selected_action
     end
@@ -23,7 +23,7 @@ defmodule Botd.BotTest do
       chat = %Chat{step: :selected_action}
       update = %{"message" => %{"text" => "Добавить"}}
 
-      result = Bot.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat, chat_id)
 
       assert result.step == :waiting_for_name
     end
@@ -32,7 +32,7 @@ defmodule Botd.BotTest do
       chat = %Chat{step: :waiting_for_name, name: nil}
       update = %{"message" => %{"text" => "John Doe"}}
 
-      result = Bot.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat, chat_id)
 
       assert result.step == :waiting_for_death_date
       assert result.name == "John Doe"
@@ -42,7 +42,7 @@ defmodule Botd.BotTest do
       chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
       update = %{"message" => %{"text" => "2025-05-11"}}
 
-      result = Bot.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat, chat_id)
 
       assert result.step == :waiting_for_reason
       assert result.death_date == ~D[2025-05-11]
@@ -52,7 +52,7 @@ defmodule Botd.BotTest do
       chat = %Chat{step: :waiting_for_reason, name: "any", death_date: "any", reason: "accident"}
       update = %{"message" => %{"text" => "Accident"}}
 
-      result = Bot.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat, chat_id)
 
       assert result.step == :finished
       assert result.reason == "Accident"
@@ -62,7 +62,7 @@ defmodule Botd.BotTest do
       chat = %Chat{step: :finished, name: "any", death_date: "any", reason: "any"}
       update = %{"message" => %{"text" => "Some text"}}
 
-      result = Bot.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat, chat_id)
 
       assert result == chat
       assert result.step == :finished

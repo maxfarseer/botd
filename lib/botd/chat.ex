@@ -3,6 +3,8 @@ defmodule Botd.Chat do
   This module is responsible for handling the Telegram chat interactions.
   """
 
+  alias Botd.Accounts
+  alias Botd.Suggestions
   require Logger
 
   defstruct chat_id: nil,
@@ -32,4 +34,149 @@ defmodule Botd.Chat do
   end
 
   # FIN
+
+  def process_message_from_user(key, update, chat, chat_id) do
+    case chat.step do
+      :waiting_for_start ->
+        text = get_in(update, ["message", "text"])
+
+        if text == "/start" do
+          Telegram.Api.request(key, "sendMessage",
+            chat_id: chat_id,
+            text: "Выберите действие",
+            reply_markup: {:json, send_menu()}
+          )
+
+          next_step = make_next_step(:waiting_for_start)
+
+          %__MODULE__{chat | step: next_step}
+        else
+          answer_on_message(key, chat_id, "Для начала работы введите /start")
+
+          chat
+        end
+
+      :selected_action ->
+        text = get_in(update, ["message", "text"])
+
+        if text == "Добавить" do
+          answer_on_message(key, chat_id, "Укажите имя")
+          next_step = make_next_step(:selected_add_person)
+          %{chat | step: next_step}
+        else
+          answer_on_message(key, chat_id, "В данный момент доступно только добавление")
+          chat
+        end
+
+      :waiting_for_name ->
+        name = get_in(update, ["message", "text"])
+        next_step = make_next_step(:waiting_for_name)
+
+        answer_on_message(key, chat_id, "Укажите дату смерти")
+
+        %__MODULE__{chat | step: next_step, name: name}
+
+      :waiting_for_death_date ->
+        death_date = get_in(update, ["message", "text"])
+        {:ok, parsed_date} = Date.from_iso8601(death_date)
+        next_step = make_next_step(:waiting_for_death_date)
+
+        answer_on_message(key, chat_id, "Укажите причину")
+
+        %{chat | step: next_step, death_date: parsed_date}
+
+      :waiting_for_reason ->
+        reason = get_in(update, ["message", "text"])
+        next_step = make_next_step(:waiting_for_reason)
+
+        answer_on_message(key, chat_id, "Вы ввели данные:")
+
+        updated_chat = %__MODULE__{chat | step: next_step, reason: reason}
+
+        total =
+          %{
+            "Имя" => updated_chat.name,
+            "Дата смерти" => updated_chat.death_date,
+            "Причина" => updated_chat.reason
+          }
+          |> Enum.map_join("\n", fn {key, value} -> "#{key}: #{value}" end)
+
+        answer_on_message(key, chat_id, total)
+
+        Telegram.Api.request(key, "sendMessage",
+          chat_id: chat_id,
+          text: "Выберите действие",
+          reply_markup: {:json, finished_menu()}
+        )
+
+        updated_chat
+
+      :finished ->
+        text = get_in(update, ["message", "text"])
+
+        case text do
+          "Отправить" ->
+            attributes = %{
+              "name" => chat.name,
+              "death_date" => chat.death_date,
+              "cause_of_death" => chat.reason,
+              "place" => "Hardcoded place"
+            }
+
+            user = Accounts.get_user_by_email("telegram@bot.com")
+
+            case Suggestions.create_suggestion(attributes, user) do
+              {:ok, _suggestion} ->
+                answer_on_message(key, chat_id, "Данные успешно отправлены на модерацию!")
+
+              {:error, changeset} ->
+                Logger.error("Error creating suggestion: #{inspect(changeset)}")
+                answer_on_message(key, chat_id, "Ошибка при отправке данных.")
+            end
+
+            chat
+
+          "Внести новую запись в книгу" ->
+            next_step = make_next_step(:waiting_for_start)
+            %__MODULE__{chat | step: next_step}
+
+          _ ->
+            answer_on_message(key, chat_id, "Действие в разработке")
+            chat
+        end
+
+      _ ->
+        Logger.warning("Unknown state: #{inspect(chat.step)}")
+        chat
+    end
+  end
+
+  defp answer_on_message(key, chat_id, text) do
+    Telegram.Api.request(key, "sendMessage",
+      chat_id: chat_id,
+      text: text
+    )
+  end
+
+  def send_menu do
+    keyboard = [
+      ["Добавить"]
+    ]
+
+    keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+
+    keyboard_markup
+  end
+
+  def finished_menu do
+    keyboard = [
+      ["Отправить"],
+      ["Редактировать", "Удалить"],
+      ["Внести новую запись в книгу"]
+    ]
+
+    keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+
+    keyboard_markup
+  end
 end

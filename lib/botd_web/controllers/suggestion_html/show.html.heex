@@ -34,6 +34,13 @@
       </div>
 
       <div class="grid grid-cols-3">
+        <div class="text-sm font-medium text-gray-500">Telegram username</div>
+        <div class="col-span-2 text-sm text-gray-900">
+          {@suggestion.telegram_username}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3">
         <div class="text-sm font-medium text-gray-500">Submitted On</div>
         <div class="col-span-2 text-sm text-gray-900">
           {Calendar.strftime(@suggestion.inserted_at, "%d %b %Y at %H:%M")}

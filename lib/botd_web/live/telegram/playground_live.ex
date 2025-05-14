@@ -1,4 +1,6 @@
 defmodule BotdWeb.Telegram.PlaygroundLive do
+  alias Botd.Chat
+
   @moduledoc """
   This controller is used to handle Telegram bot interactions.
 
@@ -38,19 +40,10 @@ defmodule BotdWeb.Telegram.PlaygroundLive do
     {:noreply, assign(socket, messages: [to_message(update) | socket.assigns.messages])}
   end
 
-  defp to_message(%{"message" => message} = _update) do
-    firstname = get_in(message, ["from", "first_name"])
-    lastname = get_in(message, ["from", "last_name"])
-    username = get_in(message, ["from", "username"])
+  defp to_message(update) do
+    from = Chat.get_user_name(update)
 
-    from =
-      case {firstname, lastname, username} do
-        {nil, _, username} -> username
-        {firstname, nil, _} -> firstname
-        {firstname, lastname, _} -> "#{firstname} #{lastname}"
-      end
-
-    text = get_in(message, ["text"])
+    text = get_in(update, ["message", "text"])
     %{from: from, text: text}
   end
 end

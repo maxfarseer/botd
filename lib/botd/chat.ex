@@ -17,23 +17,11 @@ defmodule Botd.Chat do
     %__MODULE__{}
   end
 
-  @doc """
-  changing step
-  """
-  def make_next_step(:reset), do: :waiting_for_start
-  def make_next_step(:waiting_for_start), do: :selected_action
-  def make_next_step(:selected_add_person), do: :waiting_for_name
-  def make_next_step(:waiting_for_name), do: :waiting_for_death_date
-  def make_next_step(:waiting_for_death_date), do: :waiting_for_reason
-  def make_next_step(:waiting_for_reason), do: :finished
-  def make_next_step(:finished), do: :after_finished
-
-  def make_next_step(step) do
-    Logger.warning("Unknown chat step: #{inspect(step)}")
-    step
-  end
-
-  # FIN
+  defp make_next_step(:waiting_for_start), do: :selected_action
+  defp make_next_step(:selected_add_person), do: :waiting_for_name
+  defp make_next_step(:waiting_for_name), do: :waiting_for_death_date
+  defp make_next_step(:waiting_for_death_date), do: :waiting_for_reason
+  defp make_next_step(:waiting_for_reason), do: :finished
 
   def process_message_from_user(key, update, chat, chat_id) do
     case chat.step do
@@ -47,14 +35,14 @@ defmodule Botd.Chat do
     end
   end
 
-  def handle_waiting_for_start(key, update, chat, chat_id) do
+  defp handle_waiting_for_start(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
 
     if text == "/start" do
       Telegram.Api.request(key, "sendMessage",
         chat_id: chat_id,
         text: "Выберите действие",
-        reply_markup: {:json, send_menu()}
+        reply_markup: {:json, start_menu()}
       )
 
       next_step = make_next_step(:waiting_for_start)
@@ -67,7 +55,7 @@ defmodule Botd.Chat do
     end
   end
 
-  def handle_selected_action(key, update, chat, chat_id) do
+  defp handle_selected_action(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
 
     if text == "Добавить" do
@@ -80,7 +68,7 @@ defmodule Botd.Chat do
     end
   end
 
-  def handle_waiting_for_name(key, update, chat, chat_id) do
+  defp handle_waiting_for_name(key, update, chat, chat_id) do
     name = get_in(update, ["message", "text"])
     next_step = make_next_step(:waiting_for_name)
 
@@ -89,7 +77,7 @@ defmodule Botd.Chat do
     %__MODULE__{chat | step: next_step, name: name}
   end
 
-  def handle_waiting_for_death_date(key, update, chat, chat_id) do
+  defp handle_waiting_for_death_date(key, update, chat, chat_id) do
     death_date = get_in(update, ["message", "text"])
     {:ok, parsed_date} = Date.from_iso8601(death_date)
     next_step = make_next_step(:waiting_for_death_date)
@@ -99,7 +87,7 @@ defmodule Botd.Chat do
     %__MODULE__{chat | step: next_step, death_date: parsed_date}
   end
 
-  def handle_waiting_for_reason(key, update, chat, chat_id) do
+  defp handle_waiting_for_reason(key, update, chat, chat_id) do
     reason = get_in(update, ["message", "text"])
     next_step = make_next_step(:waiting_for_reason)
 
@@ -126,7 +114,7 @@ defmodule Botd.Chat do
     updated_chat
   end
 
-  def handle_finished(key, update, chat, chat_id) do
+  defp handle_finished(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
 
     case text do
@@ -161,7 +149,7 @@ defmodule Botd.Chat do
     end
   end
 
-  def handle_unknown_state(chat) do
+  defp handle_unknown_state(chat) do
     Logger.warning("Unknown chat state: #{inspect(chat)}")
     chat
   end
@@ -173,7 +161,7 @@ defmodule Botd.Chat do
     )
   end
 
-  def send_menu do
+  defp start_menu do
     keyboard = [
       ["Добавить"]
     ]
@@ -183,7 +171,7 @@ defmodule Botd.Chat do
     keyboard_markup
   end
 
-  def finished_menu do
+  defp finished_menu do
     keyboard = [
       ["Отправить"],
       ["Редактировать", "Удалить"],

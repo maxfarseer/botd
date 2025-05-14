@@ -3,6 +3,7 @@ defmodule Botd.Bot do
   This module is responsible for handling the Telegram bot interactions.
   """
   alias Botd.Accounts
+  alias Botd.Chat
   alias Botd.Suggestions
 
   use GenServer
@@ -92,51 +93,12 @@ defmodule Botd.Bot do
     new_state
   end
 
-  def new_chat_state do
-    %{
-      chat_id: nil,
-      step: :waiting_for_start,
-      name: nil,
-      death_date: nil,
-      reason: nil
-    }
-  end
-
   # @steps %{
   #   :waiting_for_start => :waiting_for_name,
   #   :waiting_for_name => :waiting_for_death_date,
   #   :waiting_for_death_date => :waiting_for_reason,
   #   :waiting_for_reason => :finished,
   # }
-
-  def make_next_step(step) do
-    case step do
-      :reset ->
-        :waiting_for_start
-
-      :waiting_for_start ->
-        :selected_action
-
-      :selected_add_person ->
-        :waiting_for_name
-
-      :waiting_for_name ->
-        :waiting_for_death_date
-
-      :waiting_for_death_date ->
-        :waiting_for_reason
-
-      :waiting_for_reason ->
-        :finished
-
-      :finished ->
-        :after_finished
-
-      _ ->
-        Logger.warning("Unknown chat step: #{inspect(step)}")
-        step
-    end
-  end
 
   def update_chats(key, updates, chats) do
     updates
@@ -157,7 +119,7 @@ defmodule Botd.Bot do
   end
 
   def get_chat!(chats, chat_id) do
-    Map.get(chats, chat_id) || new_chat_state()
+    Map.get(chats, chat_id) || Chat.init_state()
   end
 
   defp broadcast(update) do
@@ -202,9 +164,9 @@ defmodule Botd.Bot do
             reply_markup: {:json, send_menu()}
           )
 
-          next_step = make_next_step(:waiting_for_start)
+          next_step = Chat.make_next_step(:waiting_for_start)
 
-          %{chat | step: next_step}
+          %Chat{chat | step: next_step}
         else
           answer_on_message(key, chat_id, "Для начала работы введите /start")
 
@@ -216,7 +178,7 @@ defmodule Botd.Bot do
 
         if text == "Добавить" do
           answer_on_message(key, chat_id, "Укажите имя")
-          next_step = make_next_step(:selected_add_person)
+          next_step = Chat.make_next_step(:selected_add_person)
           %{chat | step: next_step}
         else
           answer_on_message(key, chat_id, "В данный момент доступно только добавление")
@@ -225,16 +187,16 @@ defmodule Botd.Bot do
 
       :waiting_for_name ->
         name = get_in(update, ["message", "text"])
-        next_step = make_next_step(:waiting_for_name)
+        next_step = Chat.make_next_step(:waiting_for_name)
 
         answer_on_message(key, chat_id, "Укажите дату смерти")
 
-        %{chat | step: next_step, name: name}
+        %Chat{chat | step: next_step, name: name}
 
       :waiting_for_death_date ->
         death_date = get_in(update, ["message", "text"])
         {:ok, parsed_date} = Date.from_iso8601(death_date)
-        next_step = make_next_step(:waiting_for_death_date)
+        next_step = Chat.make_next_step(:waiting_for_death_date)
 
         answer_on_message(key, chat_id, "Укажите причину")
 
@@ -242,11 +204,11 @@ defmodule Botd.Bot do
 
       :waiting_for_reason ->
         reason = get_in(update, ["message", "text"])
-        next_step = make_next_step(:waiting_for_reason)
+        next_step = Chat.make_next_step(:waiting_for_reason)
 
         answer_on_message(key, chat_id, "Вы ввели данные:")
 
-        updated_chat = %{chat | step: next_step, reason: reason}
+        updated_chat = %Chat{chat | step: next_step, reason: reason}
 
         total =
           %{
@@ -292,8 +254,8 @@ defmodule Botd.Bot do
             chat
 
           "Внести новую запись в книгу" ->
-            next_step = make_next_step(:reset)
-            %{chat | step: next_step}
+            next_step = Chat.make_next_step(:waiting_for_start)
+            %Chat{chat | step: next_step}
 
           _ ->
             answer_on_message(key, chat_id, "Действие в разработке")

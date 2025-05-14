@@ -1,4 +1,5 @@
 defmodule Botd.BotTest do
+  alias Botd.Chat
   use Botd.DataCase, async: true
   alias Botd.Bot
 
@@ -10,7 +11,7 @@ defmodule Botd.BotTest do
     end
 
     test "handles :waiting_for_start step", %{key: key, chat_id: chat_id} do
-      chat = %{step: :waiting_for_start}
+      chat = %Chat{step: :waiting_for_start}
       update = %{"message" => %{"text" => "/start"}}
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
@@ -19,7 +20,7 @@ defmodule Botd.BotTest do
     end
 
     test "handles action", %{key: key, chat_id: chat_id} do
-      chat = %{step: :selected_action}
+      chat = %Chat{step: :selected_action}
       update = %{"message" => %{"text" => "Добавить"}}
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
@@ -28,7 +29,7 @@ defmodule Botd.BotTest do
     end
 
     test "handles :waiting_for_name step", %{key: key, chat_id: chat_id} do
-      chat = %{step: :waiting_for_name, name: nil}
+      chat = %Chat{step: :waiting_for_name, name: nil}
       update = %{"message" => %{"text" => "John Doe"}}
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
@@ -38,7 +39,7 @@ defmodule Botd.BotTest do
     end
 
     test "handles :waiting_for_death_date step", %{key: key, chat_id: chat_id} do
-      chat = %{step: :waiting_for_death_date, name: "any", death_date: nil}
+      chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
       update = %{"message" => %{"text" => "2025-05-11"}}
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
@@ -48,7 +49,7 @@ defmodule Botd.BotTest do
     end
 
     test "handles :waiting_for_reason step", %{key: key, chat_id: chat_id} do
-      chat = %{step: :waiting_for_reason, name: "any", death_date: "any", reason: "accident"}
+      chat = %Chat{step: :waiting_for_reason, name: "any", death_date: "any", reason: "accident"}
       update = %{"message" => %{"text" => "Accident"}}
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
@@ -58,12 +59,13 @@ defmodule Botd.BotTest do
     end
 
     test "handles :finished state, will removed later", %{key: key, chat_id: chat_id} do
-      chat = %{step: :finished, name: "any", death_date: "any", reason: "any"}
+      chat = %Chat{step: :finished, name: "any", death_date: "any", reason: "any"}
       update = %{"message" => %{"text" => "Some text"}}
 
       result = Bot.process_message_from_user(key, update, chat, chat_id)
 
       assert result == chat
+      assert result.step == :finished
     end
   end
 

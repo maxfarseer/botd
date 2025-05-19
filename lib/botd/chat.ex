@@ -128,36 +128,26 @@ defmodule Botd.Chat do
   end
 
   defp handle_waiting_for_photo(key, update, chat, chat_id) do
-    case handle_photo_message(update) do
-      {:ok, file_id} ->
-        case get_file_url(key, file_id) do
-          {:ok, file_url} ->
-            short_file_id = String.slice(file_id, 0, 10)
-            timestamp = DateTime.utc_now() |> DateTime.to_unix()
-            filename = "#{timestamp}_#{short_file_id}.jpg"
+    with {:ok, file_id} <- handle_photo_message(update),
+         {:ok, file_url} <- get_file_url(key, file_id),
+         short_file_id = String.slice(file_id, 0, 10),
+         timestamp = DateTime.utc_now() |> DateTime.to_unix(),
+         filename = "#{timestamp}_#{short_file_id}.jpg",
+         {:ok, relative_path} <- Botd.FileHandler.download_and_save_file(file_url, filename) do
+      answer_on_message(key, chat_id, "Фото принято")
+      answer_on_message(key, chat_id, "Вы ввели данные:")
+      send_total(key, chat)
+      next_step = make_next_step(:waiting_for_photo)
 
-            case Botd.FileHandler.download_and_save_file(file_url, filename) do
-              {:ok, relative_path} ->
-                answer_on_message(key, chat_id, "Фото принято")
-                answer_on_message(key, chat_id, "Вы ввели данные:")
-                send_total(key, chat)
-                next_step = make_next_step(:waiting_for_photo)
+      %__MODULE__{chat | photo_url: relative_path, step: next_step}
+    else
+      {:error, reason} when reason == "No photo found" ->
+        answer_on_message(key, chat_id, "Кажется, вы не отправили фото.")
+        chat
 
-                %__MODULE__{chat | photo_url: relative_path, step: next_step}
-
-              {:error, _reason} ->
-                answer_on_message(key, chat_id, "Проблема с загрузкой фото")
-                chat
-            end
-
-          {:error, reason} ->
-            Logger.error("Error getting file URL: #{inspect(reason)}")
-            answer_on_message(key, chat_id, "Ошибка обработки фото, попробуйте еще раз.")
-            chat
-        end
-
-      {:error, _reason} ->
-        answer_on_message(key, chat_id, "Ошибка загрузки фото, попробуйте еще раз.")
+      {:error, reason} ->
+        Logger.error("Error: #{inspect(reason)}")
+        answer_on_message(key, chat_id, "Проблема с загрузкой фото")
         chat
     end
   end

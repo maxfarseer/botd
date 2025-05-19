@@ -41,3 +41,4 @@ backup.sql
 **/.DS_Store
 /.env
 /.vscode
+priv/static/uploads/

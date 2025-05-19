@@ -58,7 +58,8 @@ defmodule Botd.Suggestions do
         People.create_person(%{
           name: suggestion.name,
           death_date: suggestion.death_date,
-          place: suggestion.place
+          place: suggestion.place,
+          photo_url: suggestion.photo_url
         })
 
       {updated_suggestion, person}

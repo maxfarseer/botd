@@ -145,8 +145,7 @@ defmodule Botd.Chat do
         answer_on_message(key, chat_id, "Кажется, вы не отправили фото.")
         chat
 
-      {:error, reason} ->
-        Logger.error("Error: #{inspect(reason)}")
+      {:error, _reason} ->
         answer_on_message(key, chat_id, "Проблема с загрузкой фото")
         chat
     end
@@ -171,8 +170,7 @@ defmodule Botd.Chat do
         user = Accounts.get_user_by_email("telegram@bot.com")
 
         case Suggestions.create_suggestion(attributes, user) do
-          {:ok, suggestion} ->
-            Logger.info("Suggestion created: #{inspect(suggestion)}")
+          {:ok, _suggestion} ->
             answer_on_message(key, chat_id, "Данные успешно отправлены на модерацию!")
 
           {:error, changeset} ->

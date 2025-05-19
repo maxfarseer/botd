@@ -103,4 +103,10 @@
       <p class="text-gray-700">{@suggestion.notes}</p>
     </div>
   <% end %>
+
+  <%= if @suggestion.photo_url do %>
+    <img src={@suggestion.photo_url} alt="Person Photo" class="person-photo" />
+  <% else %>
+    <p>No photo available</p>
+  <% end %>
 </div>

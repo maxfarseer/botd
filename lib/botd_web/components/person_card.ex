@@ -26,7 +26,7 @@ defmodule BotdWeb.PersonCard do
             ✝ {@person.death_date}
           <% end %>
         </div>
-        <.link href={"/people/#{@person.id}"} class="text-blue-600 hover:underline">
+        <.link href={"/people/#{@person.id}"} class="text-blue-700 hover:underline">
           Read more
         </.link>
       </div>

@@ -3,6 +3,7 @@ defmodule BotdWeb.PersonHTML do
 
   import BotdWeb.Helpers
   import BotdWeb.PaginationComponent
+  import BotdWeb.PersonCard
 
   embed_templates "person_html/*"
 

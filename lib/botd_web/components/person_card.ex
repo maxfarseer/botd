@@ -1,4 +1,7 @@
 defmodule BotdWeb.PersonCard do
+  @moduledoc """
+  This module defines a component for displaying a person's information in a card format.
+  """
   use Phoenix.Component
   import BotdWeb.CoreComponents
 

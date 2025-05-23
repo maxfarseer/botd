@@ -9,7 +9,7 @@ defmodule BotdWeb.PersonCard do
 
   def person_card(assigns) do
     ~H"""
-    <div class="flex items-center bg-white rounded-lg shadow p-4 mb-4">
+    <div class="flex items-center bg-gray-100 rounded-lg shadow-md p-4 mb-4 mr-4">
       <%= if @person.photo_url do %>
         <img
           src={@person.photo_url}

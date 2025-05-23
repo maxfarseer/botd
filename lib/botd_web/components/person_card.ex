@@ -17,10 +17,10 @@ defmodule BotdWeb.PersonCard do
         <.icon name="hero-camera" class="w-20 h-20 text-gray-300 mr-6" />
       <% end %>
       <div class="flex-1">
-        <div class="text-xl"><%= @person.name %></div>
+        <div class="text-xl">{@person.name}</div>
         <div class="text-gray-500 text-sm mb-2">
           <%= if @person.death_date do %>
-            ✝ <%= @person.death_date %>
+            ✝ {@person.death_date}
           <% end %>
         </div>
         <.link href={"/people/#{@person.id}"} class="text-blue-600 hover:underline">

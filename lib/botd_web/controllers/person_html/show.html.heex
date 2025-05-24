@@ -40,3 +40,19 @@
   <:item title="Cause of death">{@person.cause_of_death}</:item>
   <:item title="Description">{@person.description}</:item>
 </.list>
+
+<h3>Photos</h3>
+<%= if Enum.any?(@person.photos) do %>
+  <div class="person-photos">
+    <%= for photo <- @person.photos do %>
+      <img src={photo.url} alt={photo.size} class="person-photo" />
+    <% end %>
+  </div>
+<% else %>
+  <div class="no-photos">
+    <p>No photos available.</p>
+    <.link href={~c"#"}>
+      <.button>Add a photo</.button>
+    </.link>
+  </div>
+<% end %>

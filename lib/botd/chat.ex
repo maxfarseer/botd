@@ -130,9 +130,8 @@ defmodule Botd.Chat do
   defp handle_waiting_for_photo(key, update, chat, chat_id) do
     with {:ok, file_id} <- handle_photo_message(update),
          {:ok, file_url} <- get_file_url(key, file_id),
-         short_file_id = String.slice(file_id, 0, 10),
          timestamp = DateTime.utc_now() |> DateTime.to_unix(),
-         filename = "#{timestamp}_#{short_file_id}.jpg",
+         filename = "#{timestamp}_#{file_id}.jpg",
          {:ok, relative_path} <- Botd.FileHandler.download_and_save_file(file_url, filename) do
       answer_on_message(key, chat_id, "Фото принято")
       answer_on_message(key, chat_id, "Вы ввели данные:")
@@ -250,5 +249,30 @@ defmodule Botd.Chat do
       end
 
     from
+  end
+
+  def make_photo_set(update) do
+    case get_in(update, ["message", "photo"]) do
+      nil ->
+        {:error, "No photo found"}
+
+      photos ->
+        keys = [:tiny, :small, :medium, :large]
+
+        photoset =
+          photos
+          |> Enum.take(4)
+          |> Enum.with_index()
+          |> Enum.reduce(%{}, fn {photo, idx}, acc ->
+            key = Enum.at(keys, idx)
+
+            Map.put(acc, key, %{
+              file_id: photo["file_id"],
+              file_size: photo["file_size"]
+            })
+          end)
+
+        {:ok, photoset}
+    end
   end
 end

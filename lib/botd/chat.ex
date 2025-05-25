@@ -18,12 +18,15 @@ defmodule Botd.Chat do
     %__MODULE__{}
   end
 
-  defp make_next_step(:waiting_for_start), do: :selected_action
-  defp make_next_step(:selected_add_person), do: :waiting_for_name
-  defp make_next_step(:waiting_for_name), do: :waiting_for_death_date
-  defp make_next_step(:waiting_for_death_date), do: :waiting_for_reason
-  defp make_next_step(:waiting_for_reason), do: :waiting_for_photo
-  defp make_next_step(:waiting_for_photo), do: :finished
+  @state_transitions %{
+    waiting_for_start: :selected_action,
+    selected_add_person: :waiting_for_name,
+    waiting_for_name: :waiting_for_death_date,
+    waiting_for_death_date: :waiting_for_reason,
+    waiting_for_reason: :waiting_for_photo,
+    waiting_for_photo: :finished
+  }
+  defp make_next_step(step), do: Map.get(@state_transitions, step, :finished)
 
   defp handle_waiting_for_start(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
@@ -81,7 +84,12 @@ defmodule Botd.Chat do
     reason = get_in(update, ["message", "text"])
     next_step = make_next_step(:waiting_for_reason)
 
-    answer_on_message(key, chat_id, "Добавьте фото")
+    answer_on_message(
+      key,
+      chat_id,
+      "Добавьте одно фото на аватар (вы сможете добавить остальные фото на следующем шаге)"
+    )
+
     %__MODULE__{chat | step: next_step, reason: reason}
   end
 
@@ -149,6 +157,17 @@ defmodule Botd.Chat do
         chat
     end
   end
+
+  # defp handle_waiting_for_photos(key, update, chat, chat_id) do
+  #   text = get_in(update, ["message", "text"])
+
+  #   if text == "Фото добавлены" do
+  #     next_step = make_next_step(:waiting_for_many_photos)
+  #     %__MODULE__{chat | step: next_step}
+  #   else
+  #     chat
+  #   end
+  # end
 
   defp handle_finished(key, update, chat, chat_id) do
     username = get_user_name(update)
@@ -231,6 +250,7 @@ defmodule Botd.Chat do
       :waiting_for_death_date -> handle_waiting_for_death_date(key, update, chat, chat_id)
       :waiting_for_reason -> handle_waiting_for_reason(key, update, chat, chat_id)
       :waiting_for_photo -> handle_waiting_for_photo(key, update, chat, chat_id)
+      # :waiting_for_many_photos -> handle_waiting_for_photos(key, update, chat, chat_id)
       :finished -> handle_finished(key, update, chat, chat_id)
       _ -> handle_unknown_state(chat)
     end

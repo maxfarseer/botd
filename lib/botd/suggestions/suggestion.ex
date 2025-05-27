@@ -21,6 +21,7 @@ defmodule Botd.Suggestions.Suggestion do
     field :notes, :string
     field :telegram_username, :string
     field :photo_url, :string
+    field :photos, {:array, :string}
 
     belongs_to :user, Botd.Accounts.User
     belongs_to :reviewed_by, Botd.Accounts.User
@@ -39,7 +40,8 @@ defmodule Botd.Suggestions.Suggestion do
       :user_id,
       :reviewed_by_id,
       :telegram_username,
-      :photo_url
+      :photo_url,
+      :photos
     ])
     |> validate_required([:name, :death_date, :user_id])
     |> validate_length(:telegram_username, max: 200)

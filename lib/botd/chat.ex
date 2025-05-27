@@ -235,7 +235,8 @@ defmodule Botd.Chat do
             "cause_of_death" => chat.reason,
             "place" => "Hardcoded place",
             "telegram_username" => username,
-            "photo_url" => chat.photo_url
+            "photo_url" => chat.photo_url,
+            "photos" => processed_photos_urls
           }
 
         user = Accounts.get_user_by_email("telegram@bot.com")

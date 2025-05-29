@@ -1,14 +1,11 @@
 <.header>
-  Person {@person.id}
   <:actions>
     <.link href={~p"/people"}>
-      <.button>Back to people</.button>
+      <.icon name="hero-arrow-left" />
     </.link>
     <%= if moderator_or_admin?(@conn) do %>
       <.link href={~p"/protected/people/#{@person}/edit"} data-test-id="edit-person">
-        <.button>
-          <.icon name="hero-pencil" class="h-5 w-5 mr-2" /> Edit
-        </.button>
+        <.icon name="hero-pencil" />
       </.link>
       <.link
         href={~p"/protected/people/#{@person}"}
@@ -16,10 +13,7 @@
         data-confirm="Are you sure you want to delete this person? This action cannot be undone."
         data-test-id="remove-person"
       >
-        <.button class="bg-red-600 hover:bg-red-700">
-          <.icon name="hero-trash" class="h-5 w-5" />
-          <span class="ml-2">Delete</span>
-        </.button>
+        <.icon name="hero-trash" />
       </.link>
     <% end %>
   </:actions>
@@ -31,21 +25,18 @@
   <p>No photo available</p>
 <% end %>
 
+<h2 class="grid text-2xl m-2 place-content-center">{@person.name}</h2>
+<h3 class="grid text-sm m-2 place-content-center">{@person.birth_date} - {@person.death_date}</h3>
+
 <.list>
-  <:item title="Name">{@person.name}</:item>
-  <:item title="Nickname">{@person.nickname}</:item>
-  <:item title="Birth date">{@person.birth_date}</:item>
-  <:item title="Death date">{@person.death_date}</:item>
-  <:item title="Place">{@person.place}</:item>
-  <:item title="Cause of death">{@person.cause_of_death}</:item>
   <:item title="Description">{@person.description}</:item>
 </.list>
 
-<h3>Photos</h3>
+<h3 class="grid text-base m-2 place-content-center">Photo gallery</h3>
 <%= if Enum.any?(@person.photos) do %>
-  <div class="person-photos">
+  <div class="grid grid-cols-2">
     <%= for photo <- @person.photos do %>
-      <img src={photo.url} alt={photo.size} class="person-photo" />
+      <img src={photo.url} alt={@person.name} class="person-photo" />
     <% end %>
   </div>
 <% else %>

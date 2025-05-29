@@ -1,7 +1,10 @@
-<header class="flex justify-center items-center h-24">
-  <.icon name="hero-user-group-solid" />
+<header class="flex justify-center items-center h-16 text-base">
+  <.link href={~p"/people"}>
+    <.icon name="hero-user-group-solid" />
+    <span class="pl-2">Book of the dead</span>
+  </.link>
 </header>
-<main class="px-4 py-2">
+<main>
   <div class="mx-auto">
     <.flash_group flash={@flash} />
     {@inner_content}

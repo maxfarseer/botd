@@ -9,28 +9,28 @@ defmodule BotdWeb.PersonCard do
 
   def person_card(assigns) do
     ~H"""
-    <div class="flex items-center bg-gray-100 rounded-lg shadow-md p-4 mb-4 mr-4">
-      <%= if @person.photo_url do %>
-        <img
-          src={@person.photo_url}
-          alt={@person.name}
-          class="w-20 h-20 object-cover rounded-full border mr-6"
-        />
-      <% else %>
-        <.icon name="hero-camera" class="w-20 h-20 text-gray-300 mr-6" />
-      <% end %>
-      <div class="flex-1">
-        <div class="text-xl">{@person.name}</div>
-        <div class="text-gray-500 text-sm mb-2">
-          <%= if @person.death_date do %>
-            ✝ {@person.death_date}
-          <% end %>
+    <.link href={"/people/#{@person.id}"}>
+      <div class="flex items-center m-4">
+        <%= if @person.photo_url do %>
+          <img
+            src={@person.photo_url}
+            alt={@person.name}
+            class="w-20 h-20 object-cover rounded-full border mr-6"
+          />
+        <% else %>
+          <.icon name="hero-camera" class="w-20 h-20 text-gray-300 mr-6" />
+        <% end %>
+        <div class="flex-1">
+          <div class="text-xl mb-1">{@person.name}</div>
+          <div class="text-gray-500 text-xs mb-1 font-light">
+            {@person.birth_date} - {@person.death_date}
+          </div>
+          <div class="text-gray-500 text-xs mb-2">
+            Несколько слов из description. Полный текст можно прочитать на странице человека. Здесь три строчки текста.
+          </div>
         </div>
-        <.link href={"/people/#{@person.id}"} class="text-blue-700 hover:underline">
-          Read more
-        </.link>
       </div>
-    </div>
+    </.link>
     """
   end
 end

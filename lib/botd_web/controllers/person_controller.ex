@@ -7,18 +7,20 @@ defmodule BotdWeb.PersonController do
   def index(conn, params) do
     page = params["page"] || "1"
     per_page = params["per_page"] || "10"
+    search = params["search"]
 
     {page, _} = Integer.parse(page)
     {per_page, _} = Integer.parse(per_page)
 
     %{entries: people, page_number: page_number, total_pages: total_pages} =
-      People.list_people(page: page, per_page: per_page)
+      People.list_people(page: page, per_page: per_page, search: search)
 
     render(conn, :index,
       people: people,
       page_number: page_number,
       total_pages: total_pages,
-      per_page: per_page
+      per_page: per_page,
+      search: search
     )
   end
 

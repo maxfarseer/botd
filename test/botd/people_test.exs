@@ -75,6 +75,44 @@ defmodule Botd.PeopleTest do
       assert names_on_page == sorted_names
     end
 
+    test "list_people/1 returns people matching the search (case-insensitive)" do
+      _ = People.create_person(%{@valid_attrs | name: "Anna"})
+      _ = People.create_person(%{@valid_attrs | name: "Федор"})
+      _ = People.create_person(%{@valid_attrs | name: "Bob"})
+
+      %{entries: entries} = People.list_people(search: "ann")
+      names = Enum.map(entries, & &1.name)
+      assert "Anna" in names
+      assert "Федор" not in names
+
+      %{entries: entries_cyrillic} = People.list_people(search: "фед")
+      names_cyrillic = Enum.map(entries_cyrillic, & &1.name)
+      assert "Федор" in names_cyrillic
+    end
+
+    test "list_people/1 returns all people if search is nil" do
+      person = person_fixture()
+      %{entries: entries} = People.list_people(search: nil)
+      assert person in entries
+    end
+
+    test "list_people/1 search is case-insensitive" do
+      _ = People.create_person(%{@valid_attrs | name: "Федор"})
+      _ = People.create_person(%{@valid_attrs | name: "Bob"})
+
+      %{entries: entries_lower} = People.list_people(search: "федор")
+      %{entries: entries_upper} = People.list_people(search: "ФЕДОР")
+      %{entries: entries_mixed} = People.list_people(search: "ФеДоР")
+
+      names_lower = Enum.map(entries_lower, & &1.name)
+      names_upper = Enum.map(entries_upper, & &1.name)
+      names_mixed = Enum.map(entries_mixed, & &1.name)
+
+      assert "Федор" in names_lower
+      assert "Федор" in names_upper
+      assert "Федор" in names_mixed
+    end
+
     test "get_person!/1 returns the person with given id" do
       person = person_fixture()
       assert People.get_person!(person.id) == person

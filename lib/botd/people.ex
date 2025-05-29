@@ -22,8 +22,16 @@ defmodule Botd.People do
   def list_people(opts \\ []) do
     page = Keyword.get(opts, :page, 1)
     per_page = Keyword.get(opts, :per_page, 10)
+    search = Keyword.get(opts, :search)
 
-    Person
+    query =
+      if search do
+        from(p in Person, where: ilike(p.name, ^"%#{search}%"))
+      else
+        from(p in Person)
+      end
+
+    query
     |> order_by(desc: :updated_at)
     |> Repo.paginate(page: page, page_size: per_page)
   end

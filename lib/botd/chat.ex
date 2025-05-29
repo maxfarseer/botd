@@ -227,8 +227,6 @@ defmodule Botd.Chat do
       end)
       |> Enum.reject(&is_nil/1)
 
-    Logger.info("Processed photos urls: #{inspect(processed_photos_urls)}")
-
     case text do
       "Отправить" ->
         attributes =

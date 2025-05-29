@@ -19,6 +19,7 @@ defmodule Botd.People.Person do
     field :cause_of_death, :string
     field :description, :string
     field :photo_url, :string
+    has_many :photos, Botd.People.Photo
 
     timestamps()
   end

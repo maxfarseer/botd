@@ -62,6 +62,17 @@ defmodule Botd.Suggestions do
           photo_url: suggestion.photo_url
         })
 
+      # 3. Save photos
+      _photos =
+        (suggestion.photos || [])
+        |> Enum.map(fn url ->
+          People.create_photo(%{
+            url: url,
+            person_id: person.id,
+            size: "large"
+          })
+        end)
+
       {updated_suggestion, person}
     end)
   end

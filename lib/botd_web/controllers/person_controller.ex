@@ -49,7 +49,7 @@ defmodule BotdWeb.PersonController do
   end
 
   def show(conn, %{"id" => id}) do
-    person = People.get_person!(id)
+    person = People.get_person!(id) |> Botd.Repo.preload(:photos)
     render(conn, :show, person: person)
   end
 

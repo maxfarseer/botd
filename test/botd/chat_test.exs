@@ -95,4 +95,75 @@ defmodule ChatTest do
       assert result.step == :finished
     end
   end
+
+  describe "make_photo_set from telegram update" do
+    setup do
+      fixture = [
+        %{
+          "file_id" => "id1",
+          "file_size" => 100,
+          "file_unique_id" => "uniq-id-1",
+          "height" => 90,
+          "width" => 67
+        },
+        %{
+          "file_id" => "id2",
+          "file_size" => 200,
+          "file_unique_id" => "uniq-id-2",
+          "height" => 320,
+          "width" => 240
+        },
+        %{
+          "file_id" => "id3",
+          "file_size" => 300,
+          "file_unique_id" => "uniq-id-3",
+          "height" => 800,
+          "width" => 600
+        },
+        %{
+          "file_id" => "id4",
+          "file_size" => 400,
+          "file_unique_id" => "uniq-id-4",
+          "height" => 1280,
+          "width" => 960
+        }
+      ]
+
+      {:ok, fixture: fixture}
+    end
+
+    test "returns a map with up to 4 photos", %{fixture: fixture} do
+      update = %{
+        "message" => %{
+          "photo" => fixture
+        }
+      }
+
+      assert {:ok, photoset} = Chat.make_photo_set(update)
+      assert photoset.tiny == %{file_id: "id1", file_size: 100}
+      assert photoset.small == %{file_id: "id2", file_size: 200}
+      assert photoset.medium == %{file_id: "id3", file_size: 300}
+      assert photoset.large == %{file_id: "id4", file_size: 400}
+      refute Map.has_key?(photoset, :extra)
+    end
+
+    test "returns a map with less than 4 photos", %{fixture: fixture} do
+      update = %{
+        "message" => %{
+          "photo" => fixture |> Enum.take(2)
+        }
+      }
+
+      assert {:ok, photoset} = Chat.make_photo_set(update)
+      assert photoset.tiny == %{file_id: "id1", file_size: 100}
+      assert photoset.small == %{file_id: "id2", file_size: 200}
+      refute Map.has_key?(photoset, :medium)
+      refute Map.has_key?(photoset, :large)
+    end
+
+    test "returns error when no photos are present" do
+      update = %{"message" => %{}}
+      assert {:error, "No photo found"} = Chat.make_photo_set(update)
+    end
+  end
 end

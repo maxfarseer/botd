@@ -12,18 +12,23 @@ defmodule Botd.Chat do
             name: nil,
             death_date: nil,
             reason: nil,
-            photo_url: nil
+            photo_url: nil,
+            photos: []
 
   def init_state do
     %__MODULE__{}
   end
 
-  defp make_next_step(:waiting_for_start), do: :selected_action
-  defp make_next_step(:selected_add_person), do: :waiting_for_name
-  defp make_next_step(:waiting_for_name), do: :waiting_for_death_date
-  defp make_next_step(:waiting_for_death_date), do: :waiting_for_reason
-  defp make_next_step(:waiting_for_reason), do: :waiting_for_photo
-  defp make_next_step(:waiting_for_photo), do: :finished
+  @state_transitions %{
+    waiting_for_start: :selected_action,
+    selected_add_person: :waiting_for_name,
+    waiting_for_name: :waiting_for_death_date,
+    waiting_for_death_date: :waiting_for_reason,
+    waiting_for_reason: :waiting_for_photo,
+    waiting_for_photo: :waiting_for_gallery_photos,
+    waiting_for_gallery_photos: :finished
+  }
+  defp make_next_step(step), do: Map.get(@state_transitions, step, :finished)
 
   defp handle_waiting_for_start(key, update, chat, chat_id) do
     text = get_in(update, ["message", "text"])
@@ -81,7 +86,12 @@ defmodule Botd.Chat do
     reason = get_in(update, ["message", "text"])
     next_step = make_next_step(:waiting_for_reason)
 
-    answer_on_message(key, chat_id, "Добавьте фото")
+    answer_on_message(
+      key,
+      chat_id,
+      "Добавьте одно фото на аватар (вы сможете добавить остальные фото на следующем шаге)"
+    )
+
     %__MODULE__{chat | step: next_step, reason: reason}
   end
 
@@ -104,6 +114,9 @@ defmodule Botd.Chat do
 
       {:error, reason} ->
         {:error, reason}
+
+      _ ->
+        {:error, "Failed to get file URL. Unexpected response."}
     end
   end
 
@@ -130,13 +143,18 @@ defmodule Botd.Chat do
   defp handle_waiting_for_photo(key, update, chat, chat_id) do
     with {:ok, file_id} <- handle_photo_message(update),
          {:ok, file_url} <- get_file_url(key, file_id),
-         short_file_id = String.slice(file_id, 0, 10),
          timestamp = DateTime.utc_now() |> DateTime.to_unix(),
-         filename = "#{timestamp}_#{short_file_id}.jpg",
+         filename = "#{timestamp}_#{file_id}.jpg",
          {:ok, relative_path} <- Botd.FileHandler.download_and_save_file(file_url, filename) do
-      answer_on_message(key, chat_id, "Фото принято")
-      answer_on_message(key, chat_id, "Вы ввели данные:")
-      send_total(key, chat)
+      answer_on_message(key, chat_id, "Фото на аватар принято")
+
+      Telegram.Api.request(key, "sendMessage",
+        chat_id: chat_id,
+        text:
+          "Сейчас вы можете загрузить фото для фотогалереи. Можно загрузить несколько фото сразу.",
+        reply_markup: {:json, photo_menu()}
+      )
+
       next_step = make_next_step(:waiting_for_photo)
 
       %__MODULE__{chat | photo_url: relative_path, step: next_step}
@@ -151,9 +169,63 @@ defmodule Botd.Chat do
     end
   end
 
+  defp handle_waiting_for_gallery_photos(key, update, chat, chat_id) do
+    text = get_in(update, ["message", "text"])
+
+    if text == "Я закончил добавление фото" do
+      next_step = make_next_step(:waiting_for_many_photos)
+      answer_on_message(key, chat_id, "Вы ввели данные:")
+      send_total(key, chat)
+      %__MODULE__{chat | step: next_step}
+    else
+      with_photos = make_photo_set(update)
+
+      case with_photos do
+        {:ok, photoset} ->
+          chat = %__MODULE__{chat | photos: [photoset | chat.photos]}
+          chat
+
+        {:error, reason} ->
+          answer_on_message(key, chat_id, "Ошибка при обработке фото: #{reason}")
+          chat
+      end
+    end
+  end
+
+  def process_photos(key, chat) do
+    Enum.map(chat.photos, fn photoset ->
+      case photoset[:large] do
+        nil ->
+          nil
+
+        photo ->
+          with {:ok, file_url} <- get_file_url(key, photo.file_id),
+               timestamp = DateTime.utc_now() |> DateTime.to_unix(),
+               filename = "#{timestamp}_#{photo.file_id}.jpg",
+               {:ok, relative_path} <- Botd.FileHandler.download_and_save_file(file_url, filename) do
+            Map.put(photo, :downloaded_path, relative_path)
+          else
+            _ -> photo
+          end
+      end
+    end)
+  end
+
   defp handle_finished(key, update, chat, chat_id) do
     username = get_user_name(update)
     text = get_in(update, ["message", "text"])
+
+    processed_photos = process_photos(key, chat)
+
+    processed_photos_urls =
+      Enum.map(processed_photos, fn photo ->
+        if photo do
+          photo.downloaded_path
+        else
+          nil
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
 
     case text do
       "Отправить" ->
@@ -164,7 +236,8 @@ defmodule Botd.Chat do
             "cause_of_death" => chat.reason,
             "place" => "Hardcoded place",
             "telegram_username" => username,
-            "photo_url" => chat.photo_url
+            "photo_url" => chat.photo_url,
+            "photos" => processed_photos_urls
           }
 
         user = Accounts.get_user_by_email("telegram@bot.com")
@@ -212,6 +285,17 @@ defmodule Botd.Chat do
     keyboard_markup
   end
 
+  defp photo_menu do
+    keyboard = [
+      ["Я закончил добавление фото"],
+      ["Добавить еще фото"]
+    ]
+
+    keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+
+    keyboard_markup
+  end
+
   defp finished_menu do
     keyboard = [
       ["Отправить"],
@@ -225,15 +309,23 @@ defmodule Botd.Chat do
   end
 
   def process_message_from_user(key, update, chat, chat_id) do
-    case chat.step do
-      :waiting_for_start -> handle_waiting_for_start(key, update, chat, chat_id)
-      :selected_action -> handle_selected_action(key, update, chat, chat_id)
-      :waiting_for_name -> handle_waiting_for_name(key, update, chat, chat_id)
-      :waiting_for_death_date -> handle_waiting_for_death_date(key, update, chat, chat_id)
-      :waiting_for_reason -> handle_waiting_for_reason(key, update, chat, chat_id)
-      :waiting_for_photo -> handle_waiting_for_photo(key, update, chat, chat_id)
-      :finished -> handle_finished(key, update, chat, chat_id)
-      _ -> handle_unknown_state(chat)
+    handlers = %{
+      waiting_for_start: &handle_waiting_for_start/4,
+      selected_action: &handle_selected_action/4,
+      waiting_for_name: &handle_waiting_for_name/4,
+      waiting_for_death_date: &handle_waiting_for_death_date/4,
+      waiting_for_reason: &handle_waiting_for_reason/4,
+      waiting_for_photo: &handle_waiting_for_photo/4,
+      waiting_for_gallery_photos: &handle_waiting_for_gallery_photos/4,
+      finished: &handle_finished/4
+    }
+
+    handler = Map.get(handlers, chat.step, &handle_unknown_state/1)
+
+    if handler == (&handle_unknown_state/1) do
+      handler.(chat)
+    else
+      handler.(key, update, chat, chat_id)
     end
   end
 
@@ -250,5 +342,30 @@ defmodule Botd.Chat do
       end
 
     from
+  end
+
+  def make_photo_set(update) do
+    case get_in(update, ["message", "photo"]) do
+      nil ->
+        {:error, "No photo found"}
+
+      photos ->
+        keys = [:tiny, :small, :medium, :large]
+
+        photoset =
+          photos
+          |> Enum.take(4)
+          |> Enum.with_index()
+          |> Enum.reduce(%{}, fn {photo, idx}, acc ->
+            key = Enum.at(keys, idx)
+
+            Map.put(acc, key, %{
+              file_id: photo["file_id"],
+              file_size: photo["file_size"]
+            })
+          end)
+
+        {:ok, photoset}
+    end
   end
 end

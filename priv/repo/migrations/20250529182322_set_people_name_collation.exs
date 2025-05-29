@@ -4,10 +4,10 @@ defmodule Botd.Repo.Migrations.SetPeopleNameCollation do
   def up do
     execute("""
     ALTER TABLE people
-      ALTER COLUMN name TYPE varchar COLLATE "ru_RU.UTF-8",
-      ALTER COLUMN nickname TYPE varchar COLLATE "ru_RU.UTF-8",
-      ALTER COLUMN place TYPE varchar COLLATE "ru_RU.UTF-8",
-      ALTER COLUMN description TYPE varchar COLLATE "ru_RU.UTF-8";
+      ALTER COLUMN name TYPE varchar COLLATE "und-x-icu",
+      ALTER COLUMN nickname TYPE varchar COLLATE "und-x-icu",
+      ALTER COLUMN place TYPE varchar COLLATE "und-x-icu",
+      ALTER COLUMN description TYPE varchar COLLATE "und-x-icu";
     """)
   end
 

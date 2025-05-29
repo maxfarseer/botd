@@ -1,12 +1,4 @@
 <.flash_group flash={@flash} />
-<.header class="mb-4 mr-4">
-  People
-  <:actions>
-    <.link href={~p"/protected/people/new"}>
-      <.button>New Person</.button>
-    </.link>
-  </:actions>
-</.header>
 
 <div class="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
   <%= for person <- @people do %>

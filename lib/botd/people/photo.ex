@@ -7,12 +7,12 @@ defmodule Botd.People.Photo do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @sizes [
-    :tiny,
-    :small,
-    :medium,
-    :large
-  ]
+  # @sizes [
+  #   :tiny,
+  #   :small,
+  #   :medium,
+  #   :large
+  # ]
 
   schema "photos" do
     field :url, :string
@@ -24,8 +24,9 @@ defmodule Botd.People.Photo do
 
   def changeset(photo, attrs) do
     photo
-    |> cast(attrs, [:url, :person_id])
+    |> cast(attrs, [:url, :person_id, :size])
     |> validate_required([:url, :person_id])
-    |> validate_inclusion(:size, @sizes)
+
+    # |> validate_inclusion(:size, @sizes)
   end
 end

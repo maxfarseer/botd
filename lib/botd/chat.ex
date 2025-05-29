@@ -114,6 +114,9 @@ defmodule Botd.Chat do
 
       {:error, reason} ->
         {:error, reason}
+
+      _ ->
+        {:error, "Failed to get file URL. Unexpected response."}
     end
   end
 
@@ -308,33 +311,23 @@ defmodule Botd.Chat do
   end
 
   def process_message_from_user(key, update, chat, chat_id) do
-    case chat.step do
-      :waiting_for_start ->
-        handle_waiting_for_start(key, update, chat, chat_id)
+    handlers = %{
+      waiting_for_start: &handle_waiting_for_start/4,
+      selected_action: &handle_selected_action/4,
+      waiting_for_name: &handle_waiting_for_name/4,
+      waiting_for_death_date: &handle_waiting_for_death_date/4,
+      waiting_for_reason: &handle_waiting_for_reason/4,
+      waiting_for_photo: &handle_waiting_for_photo/4,
+      waiting_for_gallery_photos: &handle_waiting_for_gallery_photos/4,
+      finished: &handle_finished/4
+    }
 
-      :selected_action ->
-        handle_selected_action(key, update, chat, chat_id)
+    handler = Map.get(handlers, chat.step, &handle_unknown_state/1)
 
-      :waiting_for_name ->
-        handle_waiting_for_name(key, update, chat, chat_id)
-
-      :waiting_for_death_date ->
-        handle_waiting_for_death_date(key, update, chat, chat_id)
-
-      :waiting_for_reason ->
-        handle_waiting_for_reason(key, update, chat, chat_id)
-
-      :waiting_for_photo ->
-        handle_waiting_for_photo(key, update, chat, chat_id)
-
-      :waiting_for_gallery_photos ->
-        handle_waiting_for_gallery_photos(key, update, chat, chat_id)
-
-      :finished ->
-        handle_finished(key, update, chat, chat_id)
-
-      _ ->
-        handle_unknown_state(chat)
+    if handler == (&handle_unknown_state/1) do
+      handler.(chat)
+    else
+      handler.(key, update, chat, chat_id)
     end
   end
 

@@ -162,6 +162,44 @@ defmodule ChatTest do
       assert result1.chat_id == chat1_id
       assert result2.chat_id == chat2_id
     end
+
+    test "handle_waiting_for_death_date with invalid date format", %{key: key} do
+      chat_id = 1
+      chat = %Chat{chat_id: chat_id, step: :waiting_for_death_date, name: "any", death_date: nil}
+
+      update =
+        TelegramMessagesFixture.create_message_fixture(
+          chat_id,
+          1_748_714_354,
+          1,
+          "Wrong-date",
+          54_321
+        )
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_death_date
+      assert result.death_date == nil
+    end
+
+    test "handle_waiting_for_death_date with valid date format", %{key: key} do
+      chat_id = 1
+      chat = %Chat{chat_id: chat_id, step: :waiting_for_death_date, name: "any", death_date: nil}
+
+      update =
+        TelegramMessagesFixture.create_message_fixture(
+          chat_id,
+          1_748_714_354,
+          1,
+          "2025-05-11",
+          54_321
+        )
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_reason
+      assert result.death_date == ~D[2025-05-11]
+    end
   end
 
   describe "make_photo_set from telegram update" do

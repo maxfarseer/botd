@@ -89,12 +89,17 @@ defmodule Botd.Chat do
 
   defp handle_waiting_for_death_date(key, update, chat) do
     death_date = get_in(update, ["message", "text"])
-    {:ok, parsed_date} = Date.from_iso8601(death_date)
-    next_step = make_next_step(:waiting_for_death_date)
 
-    answer_on_message(key, chat.chat_id, "Укажите причину")
+    case Date.from_iso8601(death_date) do
+      {:ok, parsed_date} ->
+        next_step = make_next_step(:waiting_for_death_date)
+        answer_on_message(key, chat.chat_id, "Укажите причину")
+        %__MODULE__{chat | step: next_step, death_date: parsed_date}
 
-    %__MODULE__{chat | step: next_step, death_date: parsed_date}
+      {:error, _} ->
+        answer_on_message(key, chat.chat_id, "Некорректная дата. Введите в формате YYYY-MM-DD.")
+        chat
+    end
   end
 
   defp handle_waiting_for_reason(key, update, chat) do

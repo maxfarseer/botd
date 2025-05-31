@@ -7,6 +7,27 @@ defmodule Botd.Chat do
   alias Botd.Suggestions
   require Logger
 
+  @type step ::
+          :waiting_for_start
+          | :selected_action
+          | :selected_add_person
+          | :waiting_for_name
+          | :waiting_for_death_date
+          | :waiting_for_reason
+          | :waiting_for_photo
+          | :waiting_for_gallery_photos
+          | :finished
+
+  @type t :: %__MODULE__{
+          chat_id: integer(),
+          step: step(),
+          name: String.t() | nil,
+          death_date: Date.t() | nil,
+          reason: String.t() | nil,
+          photo_url: String.t() | nil,
+          photos: list()
+        }
+
   defstruct chat_id: nil,
             step: :waiting_for_start,
             name: nil,

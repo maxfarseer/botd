@@ -30,37 +30,31 @@ defmodule Botd.Chat do
   }
   defp make_next_step(step), do: Map.get(@state_transitions, step, :finished)
 
-  defp handle_waiting_for_start(key, update, chat) do
-    text = get_in(update, ["message", "text"])
+  defp handle_waiting_for_start(key, %{"message" => %{"text" => "/start"}}, chat) do
+    Telegram.Api.request(key, "sendMessage",
+      chat_id: chat.chat_id,
+      text: "Выберите действие",
+      reply_markup: {:json, start_menu()}
+    )
 
-    if text == "/start" do
-      Telegram.Api.request(key, "sendMessage",
-        chat_id: chat.chat_id,
-        text: "Выберите действие",
-        reply_markup: {:json, start_menu()}
-      )
-
-      next_step = make_next_step(:waiting_for_start)
-
-      %__MODULE__{chat | step: next_step}
-    else
-      answer_on_message(key, chat.chat_id, "Для начала работы введите /start")
-
-      chat
-    end
+    next_step = make_next_step(:waiting_for_start)
+    %__MODULE__{chat | step: next_step}
   end
 
-  defp handle_selected_action(key, update, chat) do
-    text = get_in(update, ["message", "text"])
+  defp handle_waiting_for_start(key, _update, chat) do
+    answer_on_message(key, chat.chat_id, "Для начала работы введите /start")
+    chat
+  end
 
-    if text == "Добавить" do
-      answer_on_message(key, chat.chat_id, "Укажите имя")
-      next_step = make_next_step(:selected_add_person)
-      %__MODULE__{chat | step: next_step}
-    else
-      answer_on_message(key, chat.chat_id, "В данный момент доступно только добавление")
-      chat
-    end
+  defp handle_selected_action(key, %{"message" => %{"text" => "Добавить"}}, chat) do
+    answer_on_message(key, chat.chat_id, "Укажите имя")
+    next_step = make_next_step(:selected_add_person)
+    %__MODULE__{chat | step: next_step}
+  end
+
+  defp handle_selected_action(key, _update, chat) do
+    answer_on_message(key, chat.chat_id, "В данный момент доступно только добавление")
+    chat
   end
 
   defp handle_waiting_for_name(key, update, chat) do
@@ -169,26 +163,28 @@ defmodule Botd.Chat do
     end
   end
 
+  defp handle_waiting_for_gallery_photos(
+         key,
+         %{"message" => %{"text" => "Я закончил добавление фото"}},
+         chat
+       ) do
+    next_step = make_next_step(:waiting_for_many_photos)
+    answer_on_message(key, chat.chat_id, "Вы ввели данные:")
+    send_total(key, chat)
+    %__MODULE__{chat | step: next_step}
+  end
+
   defp handle_waiting_for_gallery_photos(key, update, chat) do
-    text = get_in(update, ["message", "text"])
+    with_photos = make_photo_set(update)
 
-    if text == "Я закончил добавление фото" do
-      next_step = make_next_step(:waiting_for_many_photos)
-      answer_on_message(key, chat.chat_id, "Вы ввели данные:")
-      send_total(key, chat)
-      %__MODULE__{chat | step: next_step}
-    else
-      with_photos = make_photo_set(update)
+    case with_photos do
+      {:ok, photoset} ->
+        chat = %__MODULE__{chat | photos: [photoset | chat.photos]}
+        chat
 
-      case with_photos do
-        {:ok, photoset} ->
-          chat = %__MODULE__{chat | photos: [photoset | chat.photos]}
-          chat
-
-        {:error, reason} ->
-          answer_on_message(key, chat.chat_id, "Ошибка при обработке фото: #{reason}")
-          chat
-      end
+      {:error, reason} ->
+        answer_on_message(key, chat.chat_id, "Ошибка при обработке фото: #{reason}")
+        chat
     end
   end
 

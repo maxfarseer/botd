@@ -1,5 +1,6 @@
 defmodule ChatTest do
   alias Botd.Chat
+  alias Botd.TelegramMessagesFixture
   use Botd.DataCase, async: true
 
   describe "process_message_from_user/4" do
@@ -93,6 +94,74 @@ defmodule ChatTest do
 
       assert result == chat
       assert result.step == :finished
+    end
+
+    test "create_message_fixture creates a valid message structure as visciang/telegram v2.1.0 is using" do
+      chat_id = 12_345
+      date = 1_748_714_354
+      message_id = 1
+      text = "Hello, world!"
+      update_id = 54_321
+
+      message =
+        TelegramMessagesFixture.create_message_fixture(
+          chat_id,
+          date,
+          message_id,
+          text,
+          update_id
+        )
+
+      assert get_in(message, ["message", "chat", "id"]) == chat_id
+      assert get_in(message, ["message", "date"]) == date
+      assert get_in(message, ["message", "message_id"]) == message_id
+      assert get_in(message, ["message", "text"]) == text
+      assert get_in(message, ["update_id"]) == update_id
+    end
+
+    test "handles two chats in parallel and keeps their state separate", %{
+      key: key
+    } do
+      chat1_id = 1
+      chat2_id = 2
+      chat1 = %Chat{chat_id: chat1_id, step: :waiting_for_name, name: nil}
+
+      chat2 = %Chat{
+        chat_id: chat2_id,
+        step: :waiting_for_death_date,
+        name: "John Doe",
+        death_date: nil
+      }
+
+      message1 =
+        TelegramMessagesFixture.create_message_fixture(
+          chat1_id,
+          1_748_714_354,
+          1,
+          "John Doe",
+          54_321
+        )
+
+      message2 =
+        TelegramMessagesFixture.create_message_fixture(
+          chat2_id,
+          1_748_714_355,
+          2,
+          "2025-05-11",
+          54_322
+        )
+
+      result1 =
+        Chat.process_message_from_user(key, message1, chat1, chat1_id)
+
+      result2 =
+        Chat.process_message_from_user(key, message2, chat2, chat2_id)
+
+      assert result1.step == :waiting_for_death_date
+      assert result2.step == :waiting_for_reason
+      assert result1.chat_id != result2.chat_id
+      assert result1.chat_id == chat1_id
+      assert result2.chat_id == chat2_id
     end
   end
 

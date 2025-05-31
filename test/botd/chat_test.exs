@@ -3,63 +3,62 @@ defmodule ChatTest do
   alias Botd.TelegramMessagesFixture
   use Botd.DataCase, async: true
 
-  describe "process_message_from_user/4" do
+  describe "process_message_from_user/3" do
     setup do
       key = "dummy_key"
-      chat_id = 12_345
-      {:ok, key: key, chat_id: chat_id}
+      {:ok, key: key}
     end
 
-    test "handles :waiting_for_start step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_start step", %{key: key} do
       chat = %Chat{step: :waiting_for_start}
       update = %{"message" => %{"text" => "/start"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :selected_action
     end
 
-    test "handles action", %{key: key, chat_id: chat_id} do
+    test "handles action", %{key: key} do
       chat = %Chat{step: :selected_action}
       update = %{"message" => %{"text" => "Добавить"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_name
     end
 
-    test "handles :waiting_for_name step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_name step", %{key: key} do
       chat = %Chat{step: :waiting_for_name, name: nil}
       update = %{"message" => %{"text" => "John Doe"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_death_date
       assert result.name == "John Doe"
     end
 
-    test "handles :waiting_for_death_date step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_death_date step", %{key: key} do
       chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
       update = %{"message" => %{"text" => "2025-05-11"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_reason
       assert result.death_date == ~D[2025-05-11]
     end
 
-    test "handles :waiting_for_reason step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_reason step", %{key: key} do
       chat = %Chat{step: :waiting_for_reason, name: "any", death_date: "any", reason: "accident"}
       update = %{"message" => %{"text" => "Accident"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_photo
       assert result.reason == "Accident"
     end
 
     # This test require mocking. Looking for a solution / refactor
-    # test "handles :waiting_for_photo step", %{key: key, chat_id: chat_id} do
+    # test "handles :waiting_for_photo step", %{key: key} do
     #   chat = %Chat{
     #     step: :waiting_for_photo,
     #     name: "any",
@@ -80,17 +79,17 @@ defmodule ChatTest do
 
     #   update = %{"message" => %{"photo" => [%{"file_id" => "photo_id"}]}}
 
-    #   result = Chat.process_message_from_user(key, update, chat, chat_id)
+    #   result = Chat.process_message_from_user(key, update, chat)
 
     #   assert result.step == :finished
     #   assert result.photo_url == "test.jpg"
     # end
 
-    test "handles :finished state, will removed later", %{key: key, chat_id: chat_id} do
+    test "handles :finished state, will removed later", %{key: key} do
       chat = %Chat{step: :finished, name: "any", death_date: "any", reason: "any"}
       update = %{"message" => %{"text" => "Some text"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result == chat
       assert result.step == :finished
@@ -152,10 +151,10 @@ defmodule ChatTest do
         )
 
       result1 =
-        Chat.process_message_from_user(key, message1, chat1, chat1_id)
+        Chat.process_message_from_user(key, message1, chat1)
 
       result2 =
-        Chat.process_message_from_user(key, message2, chat2, chat2_id)
+        Chat.process_message_from_user(key, message2, chat2)
 
       assert result1.step == :waiting_for_death_date
       assert result2.step == :waiting_for_reason

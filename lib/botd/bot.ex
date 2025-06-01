@@ -97,7 +97,7 @@ defmodule Botd.Bot do
       chat_id = get_in(update, ["message", "chat", "id"])
       chat = Map.get(acc, chat_id, Chat.init_state())
 
-      new_chat_state = Chat.process_message_from_user(key, update, chat, chat_id)
+      new_chat_state = Chat.process_message_from_user(key, update, chat)
       Map.put(acc, chat_id, %Chat{new_chat_state | chat_id: chat_id})
     end)
   end

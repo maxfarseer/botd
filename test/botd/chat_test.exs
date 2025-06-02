@@ -1,5 +1,6 @@
 defmodule ChatTest do
   alias Botd.Chat
+  alias Botd.TelegramMessagesFixture
   use Botd.DataCase, async: true
 
   import Mox
@@ -7,63 +8,62 @@ defmodule ChatTest do
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!
 
-  describe "process_message_from_user/4" do
+  describe "process_message_from_user/3" do
     setup do
       key = "dummy_key"
-      chat_id = 12_345
-      {:ok, key: key, chat_id: chat_id}
+      {:ok, key: key}
     end
 
-    test "handles :waiting_for_start step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_start step", %{key: key} do
       chat = %Chat{step: :waiting_for_start}
       update = %{"message" => %{"text" => "/start"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :selected_action
     end
 
-    test "handles action", %{key: key, chat_id: chat_id} do
+    test "handles action", %{key: key} do
       chat = %Chat{step: :selected_action}
       update = %{"message" => %{"text" => "Добавить"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_name
     end
 
-    test "handles :waiting_for_name step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_name step", %{key: key} do
       chat = %Chat{step: :waiting_for_name, name: nil}
       update = %{"message" => %{"text" => "John Doe"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_death_date
       assert result.name == "John Doe"
     end
 
-    test "handles :waiting_for_death_date step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_death_date step", %{key: key} do
       chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
       update = %{"message" => %{"text" => "2025-05-11"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_reason
       assert result.death_date == ~D[2025-05-11]
     end
 
-    test "handles :waiting_for_reason step", %{key: key, chat_id: chat_id} do
+    test "handles :waiting_for_reason step", %{key: key} do
       chat = %Chat{step: :waiting_for_reason, name: "any", death_date: "any", reason: "accident"}
       update = %{"message" => %{"text" => "Accident"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result.step == :waiting_for_photo
       assert result.reason == "Accident"
     end
 
     # This test require mocking. Looking for a solution / refactor
-    # test "handles :waiting_for_photo step", %{key: key, chat_id: chat_id} do
+    # test "handles :waiting_for_photo step", %{key: key} do
     #   chat = %Chat{
     #     step: :waiting_for_photo,
     #     name: "any",
@@ -84,20 +84,126 @@ defmodule ChatTest do
 
     #   update = %{"message" => %{"photo" => [%{"file_id" => "photo_id"}]}}
 
-    #   result = Chat.process_message_from_user(key, update, chat, chat_id)
+    #   result = Chat.process_message_from_user(key, update, chat)
 
     #   assert result.step == :finished
     #   assert result.photo_url == "test.jpg"
     # end
 
-    test "handles :finished state, will removed later", %{key: key, chat_id: chat_id} do
+    test "handles :finished state, will removed later", %{key: key} do
       chat = %Chat{step: :finished, name: "any", death_date: "any", reason: "any"}
       update = %{"message" => %{"text" => "Some text"}}
 
-      result = Chat.process_message_from_user(key, update, chat, chat_id)
+      result = Chat.process_message_from_user(key, update, chat)
 
       assert result == chat
       assert result.step == :finished
+    end
+
+    test "create_message_fixture creates a valid message structure as visciang/telegram v2.1.0 is using" do
+      chat_id = 12_345
+      date = 1_748_714_354
+      message_id = 1
+      text = "Hello, world!"
+      update_id = 54_321
+
+      message =
+        TelegramMessagesFixture.create_message_fixture(
+          chat_id,
+          date,
+          message_id,
+          text,
+          update_id
+        )
+
+      assert get_in(message, ["message", "chat", "id"]) == chat_id
+      assert get_in(message, ["message", "date"]) == date
+      assert get_in(message, ["message", "message_id"]) == message_id
+      assert get_in(message, ["message", "text"]) == text
+      assert get_in(message, ["update_id"]) == update_id
+    end
+
+    test "handles two chats in parallel and keeps their state separate", %{
+      key: key
+    } do
+      chat1_id = 1
+      chat2_id = 2
+      chat1 = %Chat{chat_id: chat1_id, step: :waiting_for_name, name: nil}
+
+      chat2 = %Chat{
+        chat_id: chat2_id,
+        step: :waiting_for_death_date,
+        name: "John Doe",
+        death_date: nil
+      }
+
+      message1 =
+        TelegramMessagesFixture.create_message_fixture(
+          chat1_id,
+          1_748_714_354,
+          1,
+          "John Doe",
+          54_321
+        )
+
+      message2 =
+        TelegramMessagesFixture.create_message_fixture(
+          chat2_id,
+          1_748_714_355,
+          2,
+          "2025-05-11",
+          54_322
+        )
+
+      result1 =
+        Chat.process_message_from_user(key, message1, chat1)
+
+      result2 =
+        Chat.process_message_from_user(key, message2, chat2)
+
+      assert result1.step == :waiting_for_death_date
+      assert result2.step == :waiting_for_reason
+      assert result1.chat_id != result2.chat_id
+      assert result1.chat_id == chat1_id
+      assert result2.chat_id == chat2_id
+    end
+
+    test "handle_waiting_for_death_date with invalid date format", %{key: key} do
+      chat_id = 1
+      chat = %Chat{chat_id: chat_id, step: :waiting_for_death_date, name: "any", death_date: nil}
+
+      update =
+        TelegramMessagesFixture.create_message_fixture(
+          chat_id,
+          1_748_714_354,
+          1,
+          "Wrong-date",
+          54_321
+        )
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_death_date
+      assert result.death_date == nil
+    end
+
+    test "handle_waiting_for_death_date with valid date format", %{key: key} do
+      chat_id = 1
+      chat = %Chat{chat_id: chat_id, step: :waiting_for_death_date, name: "any", death_date: nil}
+
+      update =
+        TelegramMessagesFixture.create_message_fixture(
+          chat_id,
+          1_748_714_354,
+          1,
+          "2025-05-11",
+          54_321
+        )
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_reason
+      assert result.death_date == ~D[2025-05-11]
     end
   end
 

@@ -2,6 +2,11 @@ defmodule ChatTest do
   alias Botd.Chat
   use Botd.DataCase, async: true
 
+  import Mox
+
+  # Make sure mocks are verified when the test exits
+  setup :verify_on_exit!
+
   describe "process_message_from_user/4" do
     setup do
       key = "dummy_key"
@@ -93,6 +98,24 @@ defmodule ChatTest do
 
       assert result == chat
       assert result.step == :finished
+    end
+  end
+
+  describe "mox" do
+    test "telegram external api" do
+      Botd.MockTelegramAPI
+      |> expect(:send_message, fn _key -> {:ok, "Ciao"} end)
+
+      result = Chat.simple_answer("dummy_key", 2, 3)
+      assert result == "Ciao"
+    end
+
+    test "mocked function returns expected value" do
+      Botd.MockTelegramAPI
+      |> expect(:send_message, fn _key -> {:ok, "hello from Mock API"} end)
+
+      result = Chat.simple_answer("dummy_key", 2, 3)
+      assert result == "hello from Mock API"
     end
   end
 

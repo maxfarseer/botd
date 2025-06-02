@@ -66,7 +66,8 @@ defmodule Botd.MixProject do
       {:scrivener_ecto, "~> 3.0.1"},
       {:telegram, github: "visciang/telegram", tag: "2.1.0"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
-      {:httpoison, "~> 2.2.3"}
+      {:httpoison, "~> 2.2.3"},
+      {:mox, "~>1.2.0", only: :test}
     ]
   end
 

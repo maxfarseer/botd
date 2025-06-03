@@ -209,24 +209,6 @@ defmodule ChatTest do
     end
   end
 
-  describe "mox" do
-    test "telegram external api" do
-      MockTelegramAPI
-      |> expect(:send_message, fn _key -> {:ok, "Ciao"} end)
-
-      result = Chat.simple_answer("dummy_key", 2, 3)
-      assert result == "Ciao"
-    end
-
-    test "mocked function returns expected value" do
-      MockTelegramAPI
-      |> expect(:send_message, fn _key -> {:ok, "hello from Mock API"} end)
-
-      result = Chat.simple_answer("dummy_key", 2, 3)
-      assert result == "hello from Mock API"
-    end
-  end
-
   describe "make_photo_set from telegram update" do
     setup do
       fixture = [

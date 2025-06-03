@@ -300,13 +300,6 @@ defmodule Botd.Chat do
     )
   end
 
-  def simple_answer(key, _chat_id, _text) do
-    # Botd.TelegramExternalApi.send_message(key, chat_id, text)
-
-    {:ok, result} = ChatBotAdapter.send_message(key)
-    result
-  end
-
   defp start_menu do
     keyboard = [
       ["Добавить"]

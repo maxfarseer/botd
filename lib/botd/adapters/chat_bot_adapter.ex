@@ -1,4 +1,4 @@
-defmodule Botd.ChatBotAdapter do
+defmodule Botd.Adapters.ChatBotAdapter do
   @moduledoc """
   Chat bot adapter for handling Telegram bot interactions.
   """
@@ -9,5 +9,5 @@ defmodule Botd.ChatBotAdapter do
   def send_message(key), do: impl().send_message(key)
   def get_file_url(key, file_id), do: impl().get_file_url(key, file_id)
 
-  defp impl, do: Application.get_env(:botd, :telegram_chat, Botd.ExternalTelegramAPI)
+  defp impl, do: Application.get_env(:botd, :telegram_chat, Botd.Adapters.ExternalTelegramAPI)
 end

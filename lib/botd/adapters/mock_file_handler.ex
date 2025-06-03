@@ -1,4 +1,4 @@
-defmodule Botd.MockFileHandler do
+defmodule Botd.Adapters.MockFileHandler do
   @moduledoc """
   Mock implementation of file handling operations for testing purposes.
   """

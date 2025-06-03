@@ -1,4 +1,4 @@
-defmodule Botd.FileHandlerAdapter do
+defmodule Botd.Adapters.FileHandlerAdapter do
   @moduledoc """
   Adapter for file handling operations.
   """
@@ -10,5 +10,5 @@ defmodule Botd.FileHandlerAdapter do
     impl().download_and_save_file(url, filename)
   end
 
-  defp impl, do: Application.get_env(:botd, :file_handler, Botd.FileHandler)
+  defp impl, do: Application.get_env(:botd, :file_handler, Botd.Adapters.LocalFileHandler)
 end

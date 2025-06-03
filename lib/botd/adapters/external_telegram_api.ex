@@ -1,4 +1,4 @@
-defmodule Botd.ExternalTelegramAPI do
+defmodule Botd.Adapters.ExternalTelegramAPI do
   @moduledoc """
   Module for handling Telegram bot external interactions.
   """

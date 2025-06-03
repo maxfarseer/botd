@@ -4,8 +4,8 @@ defmodule Botd.Chat do
   """
 
   alias Botd.Accounts
-  alias Botd.ChatBotAdapter
-  alias Botd.FileHandlerAdapter
+  alias Botd.Adapters.ChatBotAdapter
+  alias Botd.Adapters.FileHandlerAdapter
   alias Botd.Suggestions
   require Logger
 
@@ -226,7 +226,8 @@ defmodule Botd.Chat do
           with {:ok, file_url} <- get_file_url(key, photo.file_id),
                timestamp = DateTime.utc_now() |> DateTime.to_unix(),
                filename = "#{timestamp}_#{photo.file_id}.jpg",
-               {:ok, relative_path} <- Botd.FileHandler.download_and_save_file(file_url, filename) do
+               {:ok, relative_path} <-
+                 FileHandlerAdapter.download_and_save_file(file_url, filename) do
             Map.put(photo, :downloaded_path, relative_path)
           else
             _ -> photo
@@ -302,7 +303,7 @@ defmodule Botd.Chat do
   def simple_answer(key, _chat_id, _text) do
     # Botd.TelegramExternalApi.send_message(key, chat_id, text)
 
-    {:ok, result} = Botd.ChatBotAdapter.send_message(key)
+    {:ok, result} = ChatBotAdapter.send_message(key)
     result
   end
 

@@ -1,4 +1,4 @@
-defmodule Botd.MockTelegramAPI do
+defmodule Botd.Adapters.MockTelegramAPI do
   @moduledoc """
   Module for mocking Telegram bot external interactions.
   """

@@ -1,4 +1,4 @@
-defmodule Botd.FileHandler do
+defmodule Botd.Adapters.LocalFileHandler do
   @moduledoc """
   Handles file downloads and storage.
   """

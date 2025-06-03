@@ -1,6 +1,9 @@
 defmodule ChatTest do
+  alias Botd.Adapters.MockFileHandler
+  alias Botd.Adapters.MockTelegramAPI
   alias Botd.Chat
   alias Botd.TelegramMessagesFixture
+
   use Botd.DataCase, async: true
 
   import Mox
@@ -71,12 +74,12 @@ defmodule ChatTest do
         photo_url: nil
       }
 
-      Botd.MockTelegramAPI
+      MockTelegramAPI
       |> expect(:get_file_url, fn ^key, "photo_id" ->
         {:ok, "https://example.com/test.jpg"}
       end)
 
-      Botd.MockFileHandler
+      MockFileHandler
       |> expect(:download_and_save_file, fn "https://example.com/test.jpg", _filename ->
         {:ok, "/path/to/file/after_save_to_disk.jpg"}
       end)
@@ -208,7 +211,7 @@ defmodule ChatTest do
 
   describe "mox" do
     test "telegram external api" do
-      Botd.MockTelegramAPI
+      MockTelegramAPI
       |> expect(:send_message, fn _key -> {:ok, "Ciao"} end)
 
       result = Chat.simple_answer("dummy_key", 2, 3)
@@ -216,7 +219,7 @@ defmodule ChatTest do
     end
 
     test "mocked function returns expected value" do
-      Botd.MockTelegramAPI
+      MockTelegramAPI
       |> expect(:send_message, fn _key -> {:ok, "hello from Mock API"} end)
 
       result = Chat.simple_answer("dummy_key", 2, 3)

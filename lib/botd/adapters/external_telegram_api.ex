@@ -3,10 +3,6 @@ defmodule Botd.Adapters.ExternalTelegramAPI do
   Module for handling Telegram bot external interactions.
   """
 
-  def send_message(_key) do
-    {:ok, "hello from Production API"}
-  end
-
   def get_file_url(key, file_id) do
     case Telegram.Api.request(key, "getFile", %{file_id: file_id}) do
       {:ok, %{"file_path" => file_path}} ->

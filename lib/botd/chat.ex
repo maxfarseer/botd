@@ -4,6 +4,8 @@ defmodule Botd.Chat do
   """
 
   alias Botd.Accounts
+  alias Botd.ChatBotAdapter
+  alias Botd.FileHandlerAdapter
   alias Botd.Suggestions
   require Logger
 
@@ -162,10 +164,10 @@ defmodule Botd.Chat do
 
   defp handle_waiting_for_photo(key, update, chat) do
     with {:ok, file_id} <- handle_photo_message(update),
-         {:ok, file_url} <- get_file_url(key, file_id),
+         {:ok, file_url} <- ChatBotAdapter.get_file_url(key, file_id),
          timestamp = DateTime.utc_now() |> DateTime.to_unix(),
          filename = "#{timestamp}_#{file_id}.jpg",
-         {:ok, relative_path} <- Botd.FileHandler.download_and_save_file(file_url, filename) do
+         {:ok, relative_path} <- FileHandlerAdapter.download_and_save_file(file_url, filename) do
       answer_on_message(key, chat.chat_id, "Фото на аватар принято")
 
       Telegram.Api.request(key, "sendMessage",
@@ -300,7 +302,7 @@ defmodule Botd.Chat do
   def simple_answer(key, _chat_id, _text) do
     # Botd.TelegramExternalApi.send_message(key, chat_id, text)
 
-    {:ok, result} = Botd.TelegramWTF.send_message(key)
+    {:ok, result} = Botd.ChatBotAdapter.send_message(key)
     result
   end
 

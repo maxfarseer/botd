@@ -62,33 +62,32 @@ defmodule ChatTest do
       assert result.reason == "Accident"
     end
 
-    # This test require mocking. Looking for a solution / refactor
-    # test "handles :waiting_for_photo step", %{key: key} do
-    #   chat = %Chat{
-    #     step: :waiting_for_photo,
-    #     name: "any",
-    #     death_date: "any",
-    #     reason: "any",
-    #     photo_url: nil
-    #   }
+    test "handles :waiting_for_photo step", %{key: key} do
+      chat = %Chat{
+        step: :waiting_for_photo,
+        name: "any",
+        death_date: "any",
+        reason: "any",
+        photo_url: nil
+      }
 
-    #   Botd.Chat
-    #   |> expect(:get_file_url, fn ^key, "test_file_id" ->
-    #     {:ok, "https://example.com/test.jpg"}
-    #   end)
+      Botd.MockTelegramAPI
+      |> expect(:get_file_url, fn ^key, "photo_id" ->
+        {:ok, "https://example.com/test.jpg"}
+      end)
 
-    #   Botd.FileHandler
-    #   |> expect(:download_and_save_file, fn "https://example.com/test.jpg", _filename ->
-    #     {:ok, "/uploads/test.jpg"}
-    #   end)
+      Botd.MockFileHandler
+      |> expect(:download_and_save_file, fn "https://example.com/test.jpg", _filename ->
+        {:ok, "/path/to/file/after_save_to_disk.jpg"}
+      end)
 
-    #   update = %{"message" => %{"photo" => [%{"file_id" => "photo_id"}]}}
+      update = %{"message" => %{"photo" => [%{"file_id" => "photo_id"}]}}
 
-    #   result = Chat.process_message_from_user(key, update, chat)
+      result = Chat.process_message_from_user(key, update, chat)
 
-    #   assert result.step == :finished
-    #   assert result.photo_url == "test.jpg"
-    # end
+      assert result.step == :waiting_for_gallery_photos
+      assert result.photo_url == "/path/to/file/after_save_to_disk.jpg"
+    end
 
     test "handles :finished state, will removed later", %{key: key} do
       chat = %Chat{step: :finished, name: "any", death_date: "any", reason: "any"}

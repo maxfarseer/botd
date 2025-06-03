@@ -2,6 +2,7 @@ defmodule Botd.Adapters.FileHandlerAdapter do
   @moduledoc """
   Adapter for file handling operations.
   """
+  @behaviour Botd.Adapters.FileHandlerAdapter
 
   @callback download_and_save_file(String.t(), String.t()) ::
               {:ok, String.t()} | {:error, String.t()}

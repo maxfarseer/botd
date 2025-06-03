@@ -2,6 +2,7 @@ defmodule Botd.Adapters.ChatBotAdapter do
   @moduledoc """
   Chat bot adapter for handling Telegram bot interactions.
   """
+  @behaviour Botd.Adapters.ChatBotAdapter
 
   @callback get_file_url(String.t(), String.t()) :: {:ok, String.t()}
 

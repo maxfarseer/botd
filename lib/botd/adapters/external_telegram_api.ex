@@ -2,7 +2,9 @@ defmodule Botd.Adapters.ExternalTelegramAPI do
   @moduledoc """
   Module for handling Telegram bot external interactions.
   """
+  @behaviour Botd.Adapters.ChatBotAdapter
 
+  @impl true
   def get_file_url(key, file_id) do
     case Telegram.Api.request(key, "getFile", %{file_id: file_id}) do
       {:ok, %{"file_path" => file_path}} ->

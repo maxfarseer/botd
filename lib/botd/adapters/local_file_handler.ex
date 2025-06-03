@@ -2,7 +2,9 @@ defmodule Botd.Adapters.LocalFileHandler do
   @moduledoc """
   Handles file downloads and storage.
   """
+  @behaviour Botd.Adapters.FileHandlerAdapter
 
+  @impl true
   def download_and_save_file(url, filename) do
     case HTTPoison.get(url) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->

@@ -33,6 +33,13 @@ This guide helps AI collaborators work effectively inside the Book of the Dead (
 - **Pattern usage**: leverage `with` pipelines (common in controllers) and avoid deeply nested `case` statements.
 - **Auth guard plugs**: reuse `BotdWeb.Plugs.EnsureRole` and helpers in `BotdWeb.UserAuth` when touching protected routes.
 
+## Web Markup Expectations
+
+- **Tailwind-first styling**: Build UI with Tailwind utility classes using the shared config in `assets/tailwind.config.js`. Avoid custom CSS unless absolutely necessary; if you must add it, prefer co-locating it in `assets/css/app.css` and document the rationale.
+- **Phoenix components**: Reuse abstractions in `BotdWeb.CoreComponents` and other modules under `lib/botd_web/components/` rather than hand-writing markup in controllers or LiveViews.
+- **Heroicons**: Use the bundled heroicons via `<.icon name="hero-..." />` from `BotdWeb.CoreComponents`; pick icons from https://heroicons.com/ and align with the existing outline/solid naming convention.
+- **Responsiveness & accessibility**: Follow the patterns already present in core components (e.g., flex/grid utilities, focus/ARIA attributes) to keep new markup consistent and accessible.
+
 ## Working with Data & DB
 
 - Migrations live in `priv/repo/migrations`; create new ones with `mix ecto.gen.migration`.

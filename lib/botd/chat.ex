@@ -130,10 +130,15 @@ defmodule Botd.Chat do
   end
 
   defp download_photo(key, file_id) do
-    with {:ok, file_url} <- ChatBotAdapter.get_file_url(key, file_id),
-         {:ok, relative_path} <-
-           FileHandlerAdapter.download_and_save_file(file_url, build_photo_filename(file_id)) do
-      {:ok, relative_path}
+    case ChatBotAdapter.get_file_url(key, file_id) do
+      {:ok, file_url} ->
+        FileHandlerAdapter.download_and_save_file(file_url, build_photo_filename(file_id))
+
+      {:error, reason} ->
+        {:error, reason}
+
+      _ ->
+        {:error, "Failed to get file URL. Unexpected response."}
     end
   end
 
@@ -214,18 +219,20 @@ defmodule Botd.Chat do
   end
 
   def process_photos(key, chat) do
-    Enum.map(chat.photos, fn photoset ->
-      case photoset[:large] do
-        nil ->
-          nil
+    Enum.map(chat.photos, fn photoset -> process_single_photo(key, photoset) end)
+  end
 
-        photo ->
-          case download_photo(key, photo.file_id) do
-            {:ok, relative_path} -> Map.put(photo, :downloaded_path, relative_path)
-            {:error, _reason} -> photo
-          end
-      end
-    end)
+  defp process_single_photo(key, photoset) do
+    case photoset[:large] do
+      nil ->
+        nil
+
+      photo ->
+        case download_photo(key, photo.file_id) do
+          {:ok, relative_path} -> Map.put(photo, :downloaded_path, relative_path)
+          {:error, _reason} -> photo
+        end
+    end
   end
 
   defp handle_finished(key, update, chat) do

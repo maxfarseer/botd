@@ -23,6 +23,10 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
+## Working with AI assistants
+
+- For repo-specific guidance on using an AI pair programmer, see [`AI_USAGE_GUIDE.md`](./AI_USAGE_GUIDE.md).
+
 ## CSV data import
 
 Imports dead characters

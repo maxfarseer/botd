@@ -129,17 +129,17 @@ defmodule Botd.Chat do
     end
   end
 
-  defp get_file_url(key, file_id) do
-    case Telegram.Api.request(key, "getFile", %{file_id: file_id}) do
-      {:ok, %{"file_path" => file_path}} ->
-        {:ok, "https://api.telegram.org/file/bot#{key}/#{file_path}"}
-
-      {:error, reason} ->
-        {:error, reason}
-
-      _ ->
-        {:error, "Failed to get file URL. Unexpected response."}
+  defp download_photo(key, file_id) do
+    with {:ok, file_url} <- ChatBotAdapter.get_file_url(key, file_id),
+         {:ok, relative_path} <-
+           FileHandlerAdapter.download_and_save_file(file_url, build_photo_filename(file_id)) do
+      {:ok, relative_path}
     end
+  end
+
+  defp build_photo_filename(file_id) do
+    timestamp = DateTime.utc_now() |> DateTime.to_unix()
+    "#{timestamp}_#{file_id}.jpg"
   end
 
   defp send_total(key, chat) do
@@ -164,10 +164,7 @@ defmodule Botd.Chat do
 
   defp handle_waiting_for_photo(key, update, chat) do
     with {:ok, file_id} <- handle_photo_message(update),
-         {:ok, file_url} <- ChatBotAdapter.get_file_url(key, file_id),
-         timestamp = DateTime.utc_now() |> DateTime.to_unix(),
-         filename = "#{timestamp}_#{file_id}.jpg",
-         {:ok, relative_path} <- FileHandlerAdapter.download_and_save_file(file_url, filename) do
+         {:ok, relative_path} <- download_photo(key, file_id) do
       answer_on_message(key, chat.chat_id, "Фото на аватар принято")
 
       Telegram.Api.request(key, "sendMessage",
@@ -223,14 +220,9 @@ defmodule Botd.Chat do
           nil
 
         photo ->
-          with {:ok, file_url} <- get_file_url(key, photo.file_id),
-               timestamp = DateTime.utc_now() |> DateTime.to_unix(),
-               filename = "#{timestamp}_#{photo.file_id}.jpg",
-               {:ok, relative_path} <-
-                 FileHandlerAdapter.download_and_save_file(file_url, filename) do
-            Map.put(photo, :downloaded_path, relative_path)
-          else
-            _ -> photo
+          case download_photo(key, photo.file_id) do
+            {:ok, relative_path} -> Map.put(photo, :downloaded_path, relative_path)
+            {:error, _reason} -> photo
           end
       end
     end)

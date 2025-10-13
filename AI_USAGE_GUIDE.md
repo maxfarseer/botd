@@ -61,6 +61,10 @@ This guide helps AI collaborators work effectively inside the Book of the Dead (
 - For browser-level tweaks, add/adjust LiveView or controller tests rather than relying on manual verification.
 - Pair doc updates with code changes when you touch API or UI behaviors.
 
+## Check code style
+
+Execute `mix credo --strict` and fix the warnings or errors.
+
 ## Workflow for AI-Driven Changes
 
 1. **Understand the domain**: inspect context modules before modifying behavior; keep controllers thin.

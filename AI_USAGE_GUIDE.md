@@ -63,7 +63,13 @@ This guide helps AI collaborators work effectively inside the Book of the Dead (
 
 ## Check code style
 
-Execute `mix credo --strict` and fix the warnings or errors.
+Before opening a PR, run the full validation locally:
+
+- Run the test suite: `mix test` (or targeted tests for your changes).
+- Run Credo: `mix credo --strict` and fix reported issues.
+- Run formatter: `mix format`.
+
+CI expects green tests and no Credo offenses; AI contributors should follow this workflow and include test output or Credo fixes in the change summary.
 
 ## Workflow for AI-Driven Changes
 

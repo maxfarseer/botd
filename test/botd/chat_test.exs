@@ -253,6 +253,50 @@ defmodule ChatTest do
       assert result.step == :waiting_for_reason
       assert result.death_date == ~D[2025-05-11]
     end
+
+    test "parses 'не верная дата' as error", %{key: key} do
+      chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
+      update = %{"message" => %{"text" => "не верная дата"}}
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_death_date
+      assert result.death_date == nil
+    end
+
+    test "parses 'сегодня' as today's date", %{key: key} do
+      today = Date.utc_today()
+
+      chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
+      update = %{"message" => %{"text" => "сегодня"}}
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_reason
+      assert result.death_date == today
+    end
+
+    test "parses 'вчера' as yesterday's date", %{key: key} do
+      yesterday = Date.add(Date.utc_today(), -1)
+
+      chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
+      update = %{"message" => %{"text" => "вчера"}}
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_reason
+      assert result.death_date == yesterday
+    end
+
+    test "parses DD.MM.YYYY format", %{key: key} do
+      chat = %Chat{step: :waiting_for_death_date, name: "any", death_date: nil}
+      update = %{"message" => %{"text" => "11.05.2025"}}
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_reason
+      assert result.death_date == ~D[2025-05-11]
+    end
   end
 
   describe "make_photo_set from telegram update" do

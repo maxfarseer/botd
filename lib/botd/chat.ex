@@ -84,23 +84,75 @@ defmodule Botd.Chat do
     name = get_in(update, ["message", "text"])
     next_step = make_next_step(:waiting_for_name)
 
-    answer_on_message(key, chat.chat_id, "Укажите дату смерти")
+    Telegram.Api.request(key, "sendMessage",
+      chat_id: chat.chat_id,
+      text: "Укажите дату смерти",
+      reply_markup: {:json, dates_menu()}
+    )
 
     %__MODULE__{chat | step: next_step, name: name}
   end
 
   defp handle_waiting_for_death_date(key, update, chat) do
-    death_date = get_in(update, ["message", "text"])
+    death_date = get_in(update, ["message", "text"]) |> to_string() |> String.trim()
 
-    case Date.from_iso8601(death_date) do
-      {:ok, parsed_date} ->
+    parsed_date =
+      case String.downcase(death_date) do
+        "сегодня" ->
+          Date.utc_today()
+
+        "вчера" ->
+          Date.add(Date.utc_today(), -1)
+
+        other ->
+          parse_date_text(other)
+      end
+
+    case parsed_date do
+      %Date{} = date ->
         next_step = make_next_step(:waiting_for_death_date)
         answer_on_message(key, chat.chat_id, "Укажите причину")
-        %__MODULE__{chat | step: next_step, death_date: parsed_date}
+        %__MODULE__{chat | step: next_step, death_date: date}
+
+      nil ->
+        answer_on_message(
+          key,
+          chat.chat_id,
+          "Некорректная дата. Введите в формате YYYY-MM-DD."
+        )
+
+        chat
+    end
+  end
+
+  defp parse_date_text(text) when is_binary(text) do
+    text = String.trim(text)
+
+    # Try ISO first
+    case Date.from_iso8601(text) do
+      {:ok, d} ->
+        d
 
       {:error, _} ->
-        answer_on_message(key, chat.chat_id, "Некорректная дата. Введите в формате YYYY-MM-DD.")
-        chat
+        parse_ddmmyyyy(text)
+    end
+  end
+
+  defp parse_ddmmyyyy(text) when is_binary(text) do
+    case Regex.run(~r/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/, text) do
+      [_, day_s, month_s, year_s] ->
+        with {day, ""} <- Integer.parse(day_s),
+             {month, ""} <- Integer.parse(month_s),
+             {year, ""} <- Integer.parse(year_s),
+             {:ok, date} <- Date.new(year, month, day) do
+          date
+        else
+          _ ->
+            nil
+        end
+
+      _ ->
+        nil
     end
   end
 
@@ -302,6 +354,16 @@ defmodule Botd.Chat do
   defp start_menu do
     keyboard = [
       ["Добавить"]
+    ]
+
+    keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}
+
+    keyboard_markup
+  end
+
+  defp dates_menu do
+    keyboard = [
+      ["Сегодня", "Вчера"]
     ]
 
     keyboard_markup = %{one_time_keyboard: true, keyboard: keyboard}

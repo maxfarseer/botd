@@ -129,10 +129,10 @@ defmodule Botd.Chat do
     end
   end
 
-  defp get_file_url(key, file_id) do
-    case Telegram.Api.request(key, "getFile", %{file_id: file_id}) do
-      {:ok, %{"file_path" => file_path}} ->
-        {:ok, "https://api.telegram.org/file/bot#{key}/#{file_path}"}
+  defp download_photo(key, file_id) do
+    case ChatBotAdapter.get_file_url(key, file_id) do
+      {:ok, file_url} ->
+        FileHandlerAdapter.download_and_save_file(file_url, build_photo_filename(file_id))
 
       {:error, reason} ->
         {:error, reason}
@@ -140,6 +140,11 @@ defmodule Botd.Chat do
       _ ->
         {:error, "Failed to get file URL. Unexpected response."}
     end
+  end
+
+  defp build_photo_filename(file_id) do
+    timestamp = DateTime.utc_now() |> DateTime.to_unix()
+    "#{timestamp}_#{file_id}.jpg"
   end
 
   defp send_total(key, chat) do
@@ -164,10 +169,7 @@ defmodule Botd.Chat do
 
   defp handle_waiting_for_photo(key, update, chat) do
     with {:ok, file_id} <- handle_photo_message(update),
-         {:ok, file_url} <- ChatBotAdapter.get_file_url(key, file_id),
-         timestamp = DateTime.utc_now() |> DateTime.to_unix(),
-         filename = "#{timestamp}_#{file_id}.jpg",
-         {:ok, relative_path} <- FileHandlerAdapter.download_and_save_file(file_url, filename) do
+         {:ok, relative_path} <- download_photo(key, file_id) do
       answer_on_message(key, chat.chat_id, "Фото на аватар принято")
 
       Telegram.Api.request(key, "sendMessage",
@@ -217,23 +219,20 @@ defmodule Botd.Chat do
   end
 
   def process_photos(key, chat) do
-    Enum.map(chat.photos, fn photoset ->
-      case photoset[:large] do
-        nil ->
-          nil
+    Enum.map(chat.photos, fn photoset -> process_single_photo(key, photoset) end)
+  end
 
-        photo ->
-          with {:ok, file_url} <- get_file_url(key, photo.file_id),
-               timestamp = DateTime.utc_now() |> DateTime.to_unix(),
-               filename = "#{timestamp}_#{photo.file_id}.jpg",
-               {:ok, relative_path} <-
-                 FileHandlerAdapter.download_and_save_file(file_url, filename) do
-            Map.put(photo, :downloaded_path, relative_path)
-          else
-            _ -> photo
-          end
-      end
-    end)
+  defp process_single_photo(key, photoset) do
+    case photoset[:large] do
+      nil ->
+        nil
+
+      photo ->
+        case download_photo(key, photo.file_id) do
+          {:ok, relative_path} -> Map.put(photo, :downloaded_path, relative_path)
+          {:error, _reason} -> photo
+        end
+    end
   end
 
   defp handle_finished(key, update, chat) do

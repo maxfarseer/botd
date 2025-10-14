@@ -92,6 +92,52 @@ defmodule ChatTest do
       assert result.photo_url == "/path/to/file/after_save_to_disk.jpg"
     end
 
+    test "waiting_for_photo when get_file_url fails", %{key: key} do
+      chat = %Chat{
+        step: :waiting_for_photo,
+        name: "any",
+        death_date: "any",
+        reason: "any",
+        photo_url: nil
+      }
+
+      MockTelegramAPI
+      |> expect(:get_file_url, fn ^key, "photo_id" -> {:error, "api error"} end)
+
+      update = %{"message" => %{"photo" => [%{"file_id" => "photo_id"}]}}
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      # should not advance step and should not set photo_url
+      assert result.step == :waiting_for_photo
+      assert result.photo_url == nil
+    end
+
+    test "waiting_for_photo when saving file fails", %{key: key} do
+      chat = %Chat{
+        step: :waiting_for_photo,
+        name: "any",
+        death_date: "any",
+        reason: "any",
+        photo_url: nil
+      }
+
+      MockTelegramAPI
+      |> expect(:get_file_url, fn ^key, "photo_id" -> {:ok, "https://example.com/test.jpg"} end)
+
+      MockFileHandler
+      |> expect(:download_and_save_file, fn "https://example.com/test.jpg", _filename ->
+        {:error, "disk full"}
+      end)
+
+      update = %{"message" => %{"photo" => [%{"file_id" => "photo_id"}]}}
+
+      result = Chat.process_message_from_user(key, update, chat)
+
+      assert result.step == :waiting_for_photo
+      assert result.photo_url == nil
+    end
+
     test "handles :finished state, will removed later", %{key: key} do
       chat = %Chat{step: :finished, name: "any", death_date: "any", reason: "any"}
       update = %{"message" => %{"text" => "Some text"}}

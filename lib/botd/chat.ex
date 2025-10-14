@@ -95,18 +95,7 @@ defmodule Botd.Chat do
 
   defp handle_waiting_for_death_date(key, update, chat) do
     death_date = get_in(update, ["message", "text"]) |> to_string() |> String.trim()
-
-    parsed_date =
-      case String.downcase(death_date) do
-        "сегодня" ->
-          Date.utc_today()
-
-        "вчера" ->
-          Date.add(Date.utc_today(), -1)
-
-        other ->
-          parse_date_text(other)
-      end
+    parsed_date = parse_date_text(death_date)
 
     case parsed_date do
       %Date{} = date ->
@@ -126,15 +115,20 @@ defmodule Botd.Chat do
   end
 
   defp parse_date_text(text) when is_binary(text) do
-    text = String.trim(text)
+    text = text |> String.trim() |> String.downcase()
 
-    # Try ISO first
-    case Date.from_iso8601(text) do
-      {:ok, d} ->
-        d
+    case text do
+      "сегодня" ->
+        Date.utc_today()
 
-      {:error, _} ->
-        parse_ddmmyyyy(text)
+      "вчера" ->
+        Date.add(Date.utc_today(), -1)
+
+      _ ->
+        case Date.from_iso8601(text) do
+          {:ok, d} -> d
+          {:error, _} -> parse_ddmmyyyy(text)
+        end
     end
   end
 

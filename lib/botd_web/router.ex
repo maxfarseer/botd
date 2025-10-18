@@ -45,6 +45,8 @@ defmodule BotdWeb.Router do
     put "/people/:id", PersonController, :update
     patch "/people/:id", PersonController, :update
     delete "/people/:id", PersonController, :delete
+
+    post "/people/:id/photos", PhotoController, :create
   end
 
   # Member routes - only authenticated users

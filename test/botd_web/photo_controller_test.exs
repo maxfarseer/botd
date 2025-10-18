@@ -54,4 +54,31 @@ defmodule BotdWeb.PhotoControllerTest do
     # cleanup temp dir
     File.rm_rf!(tmp_dir)
   end
+
+  test "uploads single file and creates a photo", %{conn: conn, person: person, moderator: moderator} do
+    conn = log_in_user(conn, moderator)
+
+    tmp_dir = Path.join(System.tmp_dir!(), "botd_test_uploads_single")
+    File.mkdir_p!(tmp_dir)
+
+    file1 = Path.join(tmp_dir, "single.jpg")
+    File.write!(file1, "fakeimage_single")
+
+    upload = %Plug.Upload{path: file1, filename: "single.jpg", content_type: "image/jpeg"}
+
+    conn = post(conn, "/protected/people/#{person.id}/photos", %{"photo" => upload})
+
+    assert redirected_to(conn) == "/people/#{person.id}"
+
+    photos = Repo.all(from p in Photo, where: p.person_id == ^person.id)
+    assert length(photos) == 1
+
+    Enum.each(photos, fn p ->
+      file_path = Path.join(:code.priv_dir(:botd), "static" <> p.url)
+      assert File.exists?(file_path)
+      File.rm_rf!(file_path)
+    end)
+
+    File.rm_rf!(tmp_dir)
+  end
 end

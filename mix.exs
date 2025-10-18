@@ -38,7 +38,7 @@ defmodule Botd.MixProject do
       {:ecto_sql, "~> 3.10"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_reload, "~> 1.6.1", only: :dev},
       {:phoenix_live_view, "~> 1.0.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
@@ -67,7 +67,8 @@ defmodule Botd.MixProject do
       {:telegram, github: "visciang/telegram", tag: "2.1.0"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:httpoison, "~> 2.2.3"},
-      {:mox, "~>1.2.0", only: :test}
+      {:mox, "~>1.2.0", only: :test},
+      {:tidewave, "~> 0.5", only: :dev}
     ]
   end
 

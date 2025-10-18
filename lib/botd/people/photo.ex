@@ -25,7 +25,7 @@ defmodule Botd.People.Photo do
   def changeset(photo, attrs) do
     photo
     |> cast(attrs, [:url, :person_id, :size])
-    |> validate_required([:url, :person_id])
+    |> validate_required([:url, :person_id, :size])
 
     # |> validate_inclusion(:size, @sizes)
   end

@@ -2,8 +2,8 @@ defmodule BotdWeb.PhotoController do
   use BotdWeb, :controller
 
   alias Botd.People
-  alias Botd.Repo
   alias Botd.People.Photo
+  alias Botd.Repo
 
   def create(conn, %{"id" => person_id, "photo" => uploads}) when is_list(uploads) do
     upload_dir = Path.join(:code.priv_dir(:botd), "static/uploads")

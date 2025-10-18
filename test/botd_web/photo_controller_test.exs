@@ -1,10 +1,10 @@
 defmodule BotdWeb.PhotoControllerTest do
   use BotdWeb.ConnCase, async: false
 
-  alias Botd.People
-  alias Botd.Repo
-  alias Botd.People.Photo
   alias Botd.AccountsFixtures
+  alias Botd.People
+  alias Botd.People.Photo
+  alias Botd.Repo
   import Ecto.Query
 
   setup do

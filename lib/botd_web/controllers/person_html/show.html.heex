@@ -47,8 +47,22 @@
 
 <%= if moderator_or_admin?(@conn) do %>
   <div class="mt-4">
-    <.form :let={f} for={%{}} action={~p"/protected/people/#{@person.id}/photos"} method="post" multipart>
-      <.input field={f[:photo]} type="file" label="Upload photos" required accept="image/*" multiple={true} name="photo[]" />
+    <.form
+      :let={f}
+      for={%{}}
+      action={~p"/protected/people/#{@person.id}/photos"}
+      method="post"
+      multipart
+    >
+      <.input
+        field={f[:photo]}
+        type="file"
+        label="Upload photos"
+        required
+        accept="image/*"
+        multiple={true}
+        name="photo[]"
+      />
       <.button>Upload</.button>
     </.form>
   </div>

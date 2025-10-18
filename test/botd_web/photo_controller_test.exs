@@ -20,7 +20,11 @@ defmodule BotdWeb.PhotoControllerTest do
     %{person: person, moderator: moderator}
   end
 
-  test "uploads multiple files and creates photos", %{conn: conn, person: person, moderator: moderator} do
+  test "uploads multiple files and creates photos", %{
+    conn: conn,
+    person: person,
+    moderator: moderator
+  } do
     conn = log_in_user(conn, moderator)
 
     tmp_dir = Path.join(System.tmp_dir!(), "botd_test_uploads")
@@ -55,7 +59,11 @@ defmodule BotdWeb.PhotoControllerTest do
     File.rm_rf!(tmp_dir)
   end
 
-  test "uploads single file and creates a photo", %{conn: conn, person: person, moderator: moderator} do
+  test "uploads single file and creates a photo", %{
+    conn: conn,
+    person: person,
+    moderator: moderator
+  } do
     conn = log_in_user(conn, moderator)
 
     tmp_dir = Path.join(System.tmp_dir!(), "botd_test_uploads_single")

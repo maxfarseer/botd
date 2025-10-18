@@ -5,37 +5,46 @@ defmodule BotdWeb.PhotoController do
   alias Botd.Repo
   alias Botd.People.Photo
 
-  def create(conn, %{"id" => person_id, "photo" => %Plug.Upload{} = upload}) do
-    # Save file to priv/static/uploads
+  def create(conn, %{"id" => person_id, "photo" => uploads}) when is_list(uploads) do
     upload_dir = Path.join(:code.priv_dir(:botd), "static/uploads")
     File.mkdir_p!(upload_dir)
 
-    filename = "person_#{person_id}_#{:os.system_time(:millisecond)}_#{upload.filename}"
-    dest = Path.join(upload_dir, filename)
+    person_id_int = String.to_integer(person_id)
 
-    case File.cp(upload.path, dest) do
-      :ok ->
-        url = "/uploads/#{filename}"
+    results =
+      Enum.map(uploads, fn %Plug.Upload{} = upload ->
+        filename = "person_#{person_id}_#{:os.system_time(:millisecond)}_#{upload.filename}"
+        dest = Path.join(upload_dir, filename)
 
-        attrs = %{"url" => url, "person_id" => String.to_integer(person_id), "size" => "original"}
+        case File.cp(upload.path, dest) do
+          :ok ->
+            url = "/uploads/#{filename}"
+            attrs = %{"url" => url, "person_id" => person_id_int, "size" => "original"}
+            People.create_photo(attrs)
 
-        case People.create_photo(attrs) do
-          {:ok, _photo} ->
-            conn
-            |> put_flash(:info, "Photo uploaded successfully")
-            |> redirect(to: ~p"/people/#{person_id}")
-
-          {:error, changeset} ->
-            conn
-            |> put_flash(:error, BotdWeb.ControllerHelpers.inspect_errors(changeset))
-            |> redirect(to: ~p"/people/#{person_id}")
+          {:error, reason} ->
+            {:error, "Failed to save file: #{inspect(reason)}"}
         end
+      end)
 
-      {:error, reason} ->
-        conn
-        |> put_flash(:error, "Failed to save uploaded file: #{inspect(reason)}")
-        |> redirect(to: ~p"/people/#{person_id}")
+    {oks, errs} = Enum.split_with(results, fn r -> match?({:ok, _}, r) end)
+
+    if errs == [] do
+      conn
+      |> put_flash(:info, "#{length(oks)} photos uploaded successfully")
+      |> redirect(to: ~p"/people/#{person_id}")
+    else
+      first_err = List.first(errs)
+
+      conn
+      |> put_flash(:error, "Some files failed to upload: #{inspect(first_err)}")
+      |> redirect(to: ~p"/people/#{person_id}")
     end
+  end
+
+  def create(conn, %{"id" => person_id, "photo" => %Plug.Upload{} = upload}) do
+    # backward-compatible single upload
+    create(conn, %{"id" => person_id, "photo" => [upload]})
   end
 
   def create(conn, %{"id" => person_id}) do

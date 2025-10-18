@@ -17,7 +17,7 @@ defmodule BotdWeb.PhotoController do
       :ok ->
         url = "/uploads/#{filename}"
 
-        attrs = %{"url" => url, "person_id" => String.to_integer(person_id)}
+        attrs = %{"url" => url, "person_id" => String.to_integer(person_id), "size" => "original"}
 
         case People.create_photo(attrs) do
           {:ok, _photo} ->

@@ -33,24 +33,23 @@
 </.list>
 
 <h3 class="grid text-base m-2 place-content-center">Photo gallery</h3>
-<%= if Enum.any?(@person.photos) do %>
-  <div class="grid grid-cols-2">
+<div class="grid grid-cols-2">
+  <%= if Enum.any?(@person.photos) do %>
     <%= for photo <- @person.photos do %>
       <img src={photo.url} alt={@person.name} class="person-photo" />
     <% end %>
-  </div>
-<% else %>
-  <div class="no-photos">
-    <p>No photos available.</p>
-    <%= if moderator_or_admin?(@conn) do %>
-      <.form :let={f} for={%{}} action={~p"/protected/people/#{@person.id}/photos"} method="post" multipart>
-        <.input field={f[:photo]} type="file" label="Upload photos" required accept="image/*" multiple={true} name="photo[]" />
-        <.button>Upload</.button>
-      </.form>
-    <% else %>
-      <.link href={~c"#"}>
-        <.button>Add a photo</.button>
-      </.link>
-    <% end %>
+  <% else %>
+    <div class="no-photos">
+      <p>No photos available.</p>
+    </div>
+  <% end %>
+</div>
+
+<%= if moderator_or_admin?(@conn) do %>
+  <div class="mt-4">
+    <.form :let={f} for={%{}} action={~p"/protected/people/#{@person.id}/photos"} method="post" multipart>
+      <.input field={f[:photo]} type="file" label="Upload photos" required accept="image/*" multiple={true} name="photo[]" />
+      <.button>Upload</.button>
+    </.form>
   </div>
 <% end %>

@@ -13,7 +13,7 @@ defmodule Botd.Suggestions.Suggestion do
 
   @statuses [:pending, :approved, :rejected]
 
-  #TODO: check string vs enum
+  # TODO: check string vs enum
   @sources ["web", "telegram", "vk"]
 
   schema "suggestions" do

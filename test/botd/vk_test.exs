@@ -34,9 +34,10 @@ defmodule Botd.VKTest do
 
   describe "process_event/1 with wall_post_new suggest" do
     test "creates a suggestion from a valid template post", %{vk_bot_user: vk_bot_user} do
-      event = suggested_post_event(%{
-        "text" => "Имя: Иванов Иван\nДата: 01.01.2024\nМесто: Москва\nПричина: онкология"
-      })
+      event =
+        suggested_post_event(%{
+          "text" => "Имя: Иванов Иван\nДата: 01.01.2024\nМесто: Москва\nПричина: онкология"
+        })
 
       assert :ok = VK.process_event(event)
 
@@ -121,13 +122,17 @@ defmodule Botd.VKTest do
             %{
               "type" => "photo",
               "photo" => %{
-                "sizes" => [%{"url" => "https://vk.com/photo1.jpg", "width" => 800, "height" => 600}]
+                "sizes" => [
+                  %{"url" => "https://vk.com/photo1.jpg", "width" => 800, "height" => 600}
+                ]
               }
             },
             %{
               "type" => "photo",
               "photo" => %{
-                "sizes" => [%{"url" => "https://vk.com/photo2.jpg", "width" => 800, "height" => 600}]
+                "sizes" => [
+                  %{"url" => "https://vk.com/photo2.jpg", "width" => 800, "height" => 600}
+                ]
               }
             }
           ]

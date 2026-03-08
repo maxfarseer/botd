@@ -13,6 +13,9 @@ defmodule Botd.Suggestions.Suggestion do
 
   @statuses [:pending, :approved, :rejected]
 
+  #TODO: check string vs enum
+  @sources ["web", "telegram", "vk"]
+
   schema "suggestions" do
     field :name, :string
     field :death_date, :date
@@ -22,6 +25,9 @@ defmodule Botd.Suggestions.Suggestion do
     field :telegram_username, :string
     field :photo_url, :string
     field :photos, {:array, :string}
+    field :source, :string, default: "web"
+    field :vk_post_id, :integer
+    field :vk_owner_id, :integer
 
     belongs_to :user, Botd.Accounts.User
     belongs_to :reviewed_by, Botd.Accounts.User
@@ -41,10 +47,14 @@ defmodule Botd.Suggestions.Suggestion do
       :reviewed_by_id,
       :telegram_username,
       :photo_url,
-      :photos
+      :photos,
+      :source,
+      :vk_post_id,
+      :vk_owner_id
     ])
     |> validate_required([:name, :death_date, :user_id])
     |> validate_length(:telegram_username, max: 200)
     |> validate_inclusion(:status, @statuses)
+    |> validate_inclusion(:source, @sources)
   end
 end

@@ -76,6 +76,13 @@ defmodule BotdWeb.Router do
     get "/logs", ActivityLogController, :index
   end
 
+  # VK community Callback API — no authentication required
+  scope "/vk", BotdWeb do
+    pipe_through :api
+
+    post "/callback", VKCallbackController, :handle
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", BotdWeb do
   #   pipe_through :api

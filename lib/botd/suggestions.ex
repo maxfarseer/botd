@@ -11,9 +11,11 @@ defmodule Botd.Suggestions do
   """
 
   import Ecto.Query
+  alias Botd.Adapters.VKApiAdapter
   alias Botd.People
   alias Botd.Repo
   alias Botd.Suggestions.Suggestion
+  require Logger
 
   def create_suggestion(attrs, user) do
     attrs = Map.put(attrs, "user_id", user.id)
@@ -75,15 +77,54 @@ defmodule Botd.Suggestions do
 
       {updated_suggestion, person}
     end)
+    |> tap(fn
+      {:ok, _} -> maybe_publish_vk_post(suggestion)
+      _ -> :ok
+    end)
   end
 
   def reject_suggestion(suggestion, reviewer, notes \\ nil) do
-    suggestion
-    |> Suggestion.changeset(%{
-      status: :rejected,
-      reviewed_by_id: reviewer.id,
-      notes: notes
-    })
-    |> Repo.update()
+    result =
+      suggestion
+      |> Suggestion.changeset(%{
+        status: :rejected,
+        reviewed_by_id: reviewer.id,
+        notes: notes
+      })
+      |> Repo.update()
+
+    if match?({:ok, _}, result), do: maybe_delete_vk_post(suggestion)
+
+    result
   end
+
+  defp maybe_publish_vk_post(%{source: "vk", vk_post_id: post_id, vk_owner_id: owner_id})
+       when not is_nil(post_id) and not is_nil(owner_id) do
+    token = System.get_env("VK_ACCESS_TOKEN", "")
+
+    case VKApiAdapter.publish_post(token, owner_id, post_id) do
+      {:ok, _} ->
+        Logger.info("VK: published post id=#{post_id}")
+
+      {:error, reason} ->
+        Logger.error("VK: failed to publish post id=#{post_id}: #{inspect(reason)}")
+    end
+  end
+
+  defp maybe_publish_vk_post(_), do: :ok
+
+  defp maybe_delete_vk_post(%{source: "vk", vk_post_id: post_id, vk_owner_id: owner_id})
+       when not is_nil(post_id) and not is_nil(owner_id) do
+    token = System.get_env("VK_ACCESS_TOKEN", "")
+
+    case VKApiAdapter.delete_post(token, owner_id, post_id) do
+      {:ok, _} ->
+        Logger.info("VK: deleted post id=#{post_id}")
+
+      {:error, reason} ->
+        Logger.error("VK: failed to delete post id=#{post_id}: #{inspect(reason)}")
+    end
+  end
+
+  defp maybe_delete_vk_post(_), do: :ok
 end

@@ -29,16 +29,10 @@ defmodule BotdWeb.PersonHTMLTest do
     } do
       conn = get(conn, ~p"/people/#{person}")
 
-      assert html_response(conn, 200) =~ person.name
-
       html = html_response(conn, 200)
-      {:ok, document} = Floki.parse_document(html)
-
-      edit_button = Floki.find(document, "[data-test-id='edit-person']")
-      assert edit_button == []
-
-      delete_button = Floki.find(document, "[data-test-id='remove-person']")
-      assert delete_button == []
+      assert html =~ person.name
+      refute html =~ "data-test-id=\"edit-person\""
+      refute html =~ "data-test-id=\"remove-person\""
     end
 
     test "hides Edit and Delete buttons for regular members", %{
@@ -51,16 +45,10 @@ defmodule BotdWeb.PersonHTMLTest do
         |> log_in_user(member)
         |> get(~p"/people/#{person}")
 
-      assert html_response(conn, 200) =~ person.name
-
       html = html_response(conn, 200)
-      {:ok, document} = Floki.parse_document(html)
-
-      edit_button = Floki.find(document, "[data-test-id='edit-person']")
-      assert edit_button == []
-
-      delete_button = Floki.find(document, "[data-test-id='remove-person']")
-      assert delete_button == []
+      assert html =~ person.name
+      refute html =~ "data-test-id=\"edit-person\""
+      refute html =~ "data-test-id=\"remove-person\""
     end
 
     test "shows Edit and Delete buttons for admin users", %{
@@ -73,16 +61,10 @@ defmodule BotdWeb.PersonHTMLTest do
         |> log_in_user(admin)
         |> get(~p"/people/#{person}")
 
-      assert html_response(conn, 200) =~ person.name
-
       html = html_response(conn, 200)
-      {:ok, document} = Floki.parse_document(html)
-
-      edit_button = Floki.find(document, "[data-test-id='edit-person']")
-      assert edit_button != []
-
-      delete_button = Floki.find(document, "[data-test-id='remove-person']")
-      assert delete_button != []
+      assert html =~ person.name
+      assert html =~ "data-test-id=\"edit-person\""
+      assert html =~ "data-test-id=\"remove-person\""
     end
 
     test "shows Edit and Delete buttons for moderator users", %{
@@ -95,16 +77,10 @@ defmodule BotdWeb.PersonHTMLTest do
         |> log_in_user(moderator)
         |> get(~p"/people/#{person}")
 
-      assert html_response(conn, 200) =~ person.name
-
       html = html_response(conn, 200)
-      {:ok, document} = Floki.parse_document(html)
-
-      edit_button = Floki.find(document, "[data-test-id='edit-person']")
-      assert edit_button != []
-
-      delete_button = Floki.find(document, "[data-test-id='remove-person']")
-      assert delete_button != []
+      assert html =~ person.name
+      assert html =~ "data-test-id=\"edit-person\""
+      assert html =~ "data-test-id=\"remove-person\""
     end
   end
 end

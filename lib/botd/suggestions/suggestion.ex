@@ -12,8 +12,6 @@ defmodule Botd.Suggestions.Suggestion do
   import Ecto.Changeset
 
   @statuses [:pending, :approved, :rejected]
-
-  # TODO: check string vs enum
   @sources ["web", "telegram", "vk"]
 
   schema "suggestions" do

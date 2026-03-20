@@ -26,7 +26,8 @@ defmodule Botd.AccountsFixtures do
     Enum.into(attrs, %{
       email: unique_user_email(),
       password: valid_user_password(),
-      role: valid_user_role(attrs[:role])
+      role: valid_user_role(attrs[:role]),
+      age: 25
     })
   end
 

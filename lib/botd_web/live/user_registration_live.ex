@@ -33,6 +33,7 @@ defmodule BotdWeb.UserRegistrationLive do
 
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
+        <.input field={@form[:age]} type="number" label="Age" required />
         <input type="hidden" name="user[role]" value="member" />
 
         <:actions>

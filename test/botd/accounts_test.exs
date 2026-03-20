@@ -54,7 +54,8 @@ defmodule Botd.AccountsTest do
 
       assert %{
                password: ["can't be blank"],
-               email: ["can't be blank"]
+               email: ["can't be blank"],
+               age: ["can't be blank"]
              } = errors_on(changeset)
     end
 
@@ -90,6 +91,7 @@ defmodule Botd.AccountsTest do
       assert user.email == email
       assert is_binary(user.hashed_password)
       assert user.role == :member
+      assert user.age == 25
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
@@ -98,7 +100,7 @@ defmodule Botd.AccountsTest do
   describe "change_user_registration/2" do
     test "returns a changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_registration(%User{})
-      assert changeset.required == [:password, :email, :role]
+      assert changeset.required == [:age, :password, :email, :role]
     end
 
     test "allows fields to be set" do

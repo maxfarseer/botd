@@ -17,6 +17,7 @@ defmodule Botd.Accounts.User do
     field :current_password, :string, virtual: true, redact: true
     field :confirmed_at, :utc_datetime
     field :role, Ecto.Enum, values: @roles, default: :member
+    field :age, :integer
 
     timestamps(type: :utc_datetime)
   end
@@ -51,16 +52,23 @@ defmodule Botd.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :role])
+    |> cast(attrs, [:email, :password, :role, :age])
     |> validate_role(opts)
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_age()
   end
 
   defp validate_role(changeset, _opts) do
     changeset
     |> validate_required([:role])
     |> validate_inclusion(:role, @roles)
+  end
+
+  defp validate_age(changeset) do
+    changeset
+    |> validate_required([:age])
+    |> validate_number(:age, greater_than_or_equal_to: 1, less_than_or_equal_to: 150)
   end
 
   defp validate_email(changeset, opts) do

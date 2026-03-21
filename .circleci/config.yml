@@ -135,3 +135,13 @@ workflows:
           filters:
             branches:
               only: main
+  manual_deploy:
+    jobs:
+      - build_and_test
+      - hold_deploy:
+          type: approval
+          requires:
+            - build_and_test
+      - deploy:
+          requires:
+            - hold_deploy

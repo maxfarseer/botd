@@ -78,7 +78,7 @@ jobs:
 
   deploy:
     docker:
-      - image: hexpm/elixir:1.18.2-erlang-26.2.1-ubuntu-jammy-20240808
+      - image: hexpm/elixir:1.18.2-erlang-26.2.1-ubuntu-jammy-20260217
 
     environment:
       MIX_ENV: prod

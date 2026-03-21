@@ -129,13 +129,21 @@ workflows:
   build_test_deploy:
     jobs:
       - build_and_test
+      - deploy:
+          name: auto_deploy
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: main
       - hold_deploy:
           type: approval
           requires:
             - build_and_test
           filters:
             branches:
-              only: main
+              ignore: main
       - deploy:
+          name: manual_deploy
           requires:
             - hold_deploy

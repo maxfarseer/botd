@@ -4,6 +4,11 @@ set -euo pipefail
 TARBALL="$1"
 DEPLOY_DIR="/opt/botd/current"
 
+# Load environment variables (DATABASE_URL, SECRET_KEY_BASE, etc.)
+set -a
+source /etc/botd.env
+set +a
+
 echo "==> Stopping service..."
 sudo systemctl stop botd || true
 
@@ -15,9 +20,6 @@ tar -xzf "$TARBALL" -C "$DEPLOY_DIR"
 echo "==> Backing up database..."
 BACKUP_DIR="/opt/botd/backups"
 mkdir -p "$BACKUP_DIR"
-set -a
-source /etc/botd.env
-set +a
 pg_dump botd_prod > "$BACKUP_DIR/pre-deploy-$(date +%Y%m%d%H%M%S).sql"
 
 echo "==> Running migrations..."

@@ -12,8 +12,15 @@ rm -rf "$DEPLOY_DIR"
 mkdir -p "$DEPLOY_DIR"
 tar -xzf "$TARBALL" -C "$DEPLOY_DIR"
 
-echo "==> Running migrations..."
+echo "==> Backing up database..."
+BACKUP_DIR="/opt/botd/backups"
+mkdir -p "$BACKUP_DIR"
+set -a
 source /etc/botd.env
+set +a
+pg_dump botd_prod > "$BACKUP_DIR/pre-deploy-$(date +%Y%m%d%H%M%S).sql"
+
+echo "==> Running migrations..."
 "$DEPLOY_DIR/bin/migrate"
 
 echo "==> Starting service..."

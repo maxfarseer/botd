@@ -121,9 +121,9 @@ jobs:
       - run:
           name: Deploy to server
           command: |
-            scp -o StrictHostKeyChecking=no deploy/deploy.sh $SSH_USER@$SERVER_IP:/opt/botd/deploy.sh
+            scp -o StrictHostKeyChecking=no deploy/deploy.sh $SSH_USER@$SERVER_IP:/tmp/deploy.sh
             scp -o StrictHostKeyChecking=no botd.tar.gz $SSH_USER@$SERVER_IP:/opt/botd/botd.tar.gz
-            ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP 'bash /opt/botd/deploy.sh /opt/botd/botd.tar.gz'
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP 'sudo mv /tmp/deploy.sh /opt/botd/deploy.sh && sudo chmod +x /opt/botd/deploy.sh && bash /opt/botd/deploy.sh /opt/botd/botd.tar.gz'
 
 workflows:
   version: 2

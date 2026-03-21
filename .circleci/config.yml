@@ -76,8 +76,62 @@ jobs:
           name: Run tests
           command: mix test
 
+  deploy:
+    docker:
+      - image: cimg/elixir:1.18.2-erlang-26.2.1-node
+
+    environment:
+      MIX_ENV: prod
+
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_KEY_FINGERPRINT}"
+
+      - restore_cache:
+          keys:
+            - v1-prod-mix-cache-{{ checksum "mix.lock" }}
+            - v1-prod-mix-cache
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get --only prod
+
+      - run:
+          name: Compile
+          command: mix compile
+
+      - run:
+          name: Build assets
+          command: mix assets.deploy
+
+      - run:
+          name: Build release
+          command: mix release
+
+      - save_cache:
+          key: v1-prod-mix-cache-{{ checksum "mix.lock" }}
+          paths: "deps"
+
+      - run:
+          name: Package release
+          command: tar -czf botd.tar.gz -C _build/prod/rel/botd .
+
+      - run:
+          name: Deploy to server
+          command: |
+            scp -o StrictHostKeyChecking=no botd.tar.gz $SSH_USER@$SERVER_IP:/opt/botd/botd.tar.gz
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP 'bash /opt/botd/deploy.sh /opt/botd/botd.tar.gz'
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build_and_test
+      - deploy:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: main

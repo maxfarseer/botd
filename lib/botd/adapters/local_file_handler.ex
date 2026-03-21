@@ -8,7 +8,7 @@ defmodule Botd.Adapters.LocalFileHandler do
   def download_and_save_file(url, filename) do
     case HTTPoison.get(url) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        upload_dir = Path.join(:code.priv_dir(:botd), "static/uploads")
+        upload_dir = Application.get_env(:botd, :upload_dir)
         File.mkdir_p!(upload_dir)
 
         file_path = Path.join(upload_dir, filename)

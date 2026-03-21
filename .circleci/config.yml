@@ -78,13 +78,18 @@ jobs:
 
   deploy:
     docker:
-      - image: cimg/elixir:1.18.2-erlang-26.2.1-node
+      - image: hexpm/elixir:1.18.2-erlang-26.2.1-ubuntu-jammy-20240808
 
     environment:
       MIX_ENV: prod
 
     steps:
       - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apt-get update
+            apt-get install -y git curl ssh
       - add_ssh_keys:
           fingerprints:
             - "${SSH_KEY_FINGERPRINT}"

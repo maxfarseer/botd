@@ -4,7 +4,7 @@ defmodule BotdWeb.PhotoController do
   alias Botd.People
 
   def create(conn, %{"id" => person_id, "photo" => uploads}) when is_list(uploads) do
-    upload_dir = Path.join(:code.priv_dir(:botd), "static/uploads")
+    upload_dir = Application.get_env(:botd, :upload_dir)
     File.mkdir_p!(upload_dir)
 
     person_id_int = String.to_integer(person_id)

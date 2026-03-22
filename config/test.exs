@@ -32,6 +32,14 @@ config :swoosh, :api_client, false
 # Print only warnings and errors during test
 config :logger, level: :warning
 
+# Don't start the Telegram bot in tests
+config :botd, :start_telegram_bot, false
+
+# Store uploads in tests
+config :botd,
+       :upload_dir,
+       System.get_env("UPLOAD_DIR") || Path.join(File.cwd!(), "priv/static/uploads")
+
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
 

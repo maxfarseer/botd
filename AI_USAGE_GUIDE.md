@@ -4,7 +4,7 @@ This guide helps AI collaborators work effectively inside the Book of the Dead (
 
 ## Project Snapshot
 
-- **Stack**: Elixir 1.14+, Phoenix 1.7, PostgreSQL, LiveView, Tailwind, Esbuild.
+- **Stack**: Elixir 1.14+, Phoenix 1.8.5, PostgreSQL, LiveView, Tailwind, Esbuild.
 - **App entry**: OTP app `:botd` with main supervision tree in `lib/botd/application.ex`.
 - **Contexts** (domain logic lives under `lib/botd/`):
   - `Accounts` (users, auth flows, Mailer notifications).

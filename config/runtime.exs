@@ -53,6 +53,8 @@ if config_env() == :prod do
 
   config :botd, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  config :botd, :upload_dir, System.get_env("UPLOAD_DIR") || "/var/lib/botd/uploads"
+
   config :botd, BotdWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [

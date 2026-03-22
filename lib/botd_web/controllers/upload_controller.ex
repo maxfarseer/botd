@@ -2,7 +2,7 @@ defmodule BotdWeb.UploadController do
   use BotdWeb, :controller
 
   def show(conn, %{"filename" => filename}) do
-    file_path = Path.join(:code.priv_dir(:botd), "static/uploads/#{filename}")
+    file_path = Path.join(Application.get_env(:botd, :upload_dir), filename)
 
     if File.exists?(file_path) do
       conn

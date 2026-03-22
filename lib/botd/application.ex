@@ -21,7 +21,7 @@ defmodule Botd.Application do
         # Start to serve requests, typically the last entry
         BotdWeb.Endpoint
       ] ++
-        if Mix.env() != :test do
+        if Application.get_env(:botd, :start_telegram_bot, true) do
           [
             # Start telegram bot genserver
             {Botd.Bot,

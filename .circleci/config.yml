@@ -76,8 +76,79 @@ jobs:
           name: Run tests
           command: mix test
 
+  deploy:
+    docker:
+      - image: hexpm/elixir:1.18.2-erlang-26.2.1-debian-bookworm-20260316
+
+    environment:
+      MIX_ENV: prod
+
+    steps:
+      - checkout
+      - run:
+          name: Install system dependencies
+          command: |
+            apt-get update
+            apt-get install -y git curl ssh make gcc
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_KEY_FINGERPRINT}"
+
+      - restore_cache:
+          keys:
+            - v1-prod-mix-cache-{{ checksum "mix.lock" }}
+            - v1-prod-mix-cache
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get --only prod
+
+      - run:
+          name: Compile
+          command: mix compile
+
+      - run:
+          name: Build assets
+          command: mix assets.deploy
+
+      - run:
+          name: Build release
+          command: mix release
+
+      - save_cache:
+          key: v1-prod-mix-cache-{{ checksum "mix.lock" }}
+          paths: "deps"
+
+      - run:
+          name: Package release
+          command: tar -czf botd.tar.gz -C _build/prod/rel/botd .
+
+      - run:
+          name: Deploy to server
+          command: |
+            scp -o StrictHostKeyChecking=no deploy/deploy.sh $SSH_USER@$SERVER_IP:/opt/botd/deploy.sh
+            scp -o StrictHostKeyChecking=no botd.tar.gz $SSH_USER@$SERVER_IP:/opt/botd/botd.tar.gz
+            ssh -o StrictHostKeyChecking=no $SSH_USER@$SERVER_IP 'bash /opt/botd/deploy.sh /opt/botd/botd.tar.gz'
+
 workflows:
-  version: 2
-  build_and_test:
+  build_test_deploy:
     jobs:
       - build_and_test
+      - deploy:
+          name: auto_deploy
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: main
+      # - hold_deploy:
+      #     type: approval
+      #     requires:
+      #       - build_and_test
+      #     filters:
+      #       branches:
+      #         ignore: main
+      # - deploy:
+      #     name: manual_deploy
+      #     requires:
+      #       - hold_deploy

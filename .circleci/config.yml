@@ -89,7 +89,7 @@ jobs:
           name: Install system dependencies
           command: |
             apt-get update
-            apt-get install -y git curl ssh
+            apt-get install -y git curl ssh make gcc
       - add_ssh_keys:
           fingerprints:
             - "${SSH_KEY_FINGERPRINT}"

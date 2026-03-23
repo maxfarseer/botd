@@ -30,6 +30,7 @@ botd-*.tar
 
 # Ignore digested assets cache and digested/gzipped copies.
 /priv/static/cache_manifest.json
+!/priv/static/android-chrome-*.png
 /priv/static/*-[0-9a-f]*.*
 /priv/static/**/*-[0-9a-f]*.*
 /priv/static/*.gz

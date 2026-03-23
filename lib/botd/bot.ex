@@ -63,6 +63,10 @@ defmodule Botd.Bot do
             )
 
           %{state | last_seen: new_state.last_seen, chats: new_state.chats}
+
+        {:error, reason} ->
+          Logger.error("getUpdates failed: #{inspect(reason)}")
+          state
       end
 
     next_loop()

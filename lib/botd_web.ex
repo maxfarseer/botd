@@ -19,7 +19,7 @@ defmodule BotdWeb do
 
   def static_paths,
     do:
-      ~w(assets fonts images favicon.ico apple-touch-icon.png android-chrome-192x192.png android-chrome-512x512.png robots.txt)
+      ~w(assets fonts images robots.txt)
 
   def router do
     quote do

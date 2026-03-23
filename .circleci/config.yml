@@ -141,14 +141,14 @@ workflows:
           filters:
             branches:
               only: main
-      # - hold_deploy:
-      #     type: approval
-      #     requires:
-      #       - build_and_test
-      #     filters:
-      #       branches:
-      #         ignore: main
-      # - deploy:
-      #     name: manual_deploy
-      #     requires:
-      #       - hold_deploy
+      - hold_deploy:
+          type: approval
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              ignore: main
+      - deploy:
+          name: manual_deploy
+          requires:
+            - hold_deploy

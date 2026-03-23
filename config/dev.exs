@@ -88,3 +88,6 @@ config :swoosh, :api_client, false
 config :botd,
        :upload_dir,
        System.get_env("UPLOAD_DIR") || Path.join(File.cwd!(), "priv/static/uploads")
+
+# Disable Telegram bot polling in dev to avoid conflict with production instance
+config :botd, start_telegram_bot: false

@@ -31,6 +31,7 @@ defmodule BotdWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/design-system", DesignSystemController, :index
     get "/people", PersonController, :index
     get "/people/:id", PersonController, :show
     get "/uploads/:filename", UploadController, :show

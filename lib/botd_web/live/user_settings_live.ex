@@ -10,7 +10,7 @@ defmodule BotdWeb.UserSettingsLive do
       <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>
 
-    <div class="space-y-12 divide-y">
+    <div class="space-y-12 divide-y divide-outline-variant">
       <div>
         <.simple_form
           for={@email_form}

@@ -1,13 +1,13 @@
 <.flash_group flash={@flash} />
 
-<div class="min-h-screen bg-gray-900 flex flex-col items-center justify-center px-4 text-center">
+<div class="min-h-screen flex flex-col items-center justify-center px-4 text-center">
   <div class="max-w-2xl mx-auto">
-    <!-- Skull icon using Heroicons -->
+    <!-- Skull icon -->
     <div class="mb-8">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        class="w-32 h-32 mx-auto text-gray-200"
+        class="w-32 h-32 mx-auto text-on-surface"
       >
         <path
           fill="currentColor"
@@ -17,19 +17,19 @@
     </div>
     
 <!-- App Title -->
-    <h1 class="text-5xl font-bold text-amber-500 mb-6 tracking-tight">
+    <h1 class="font-headline text-5xl text-secondary text-glow mb-6 tracking-tight">
       Book of the Dead
     </h1>
     
 <!-- Subtitle -->
-    <p class="text-xl text-gray-300 mb-12 max-w-md mx-auto">
+    <p class="text-xl text-on-surface-variant mb-12 max-w-md mx-auto">
       A chronicle of those who came before us, their stories, and their legacies.
     </p>
     
 <!-- CTA Button -->
     <.link
       href={~p"/people"}
-      class="inline-flex items-center px-8 py-4 text-lg font-medium text-gray-900 bg-amber-500 rounded-lg hover:bg-amber-600 transition-colors duration-300"
+      class="inline-flex items-center px-8 py-4 text-lg font-label font-medium text-on-secondary bg-secondary hover:bg-secondary/90 transition-colors duration-300"
     >
       <.icon name="hero-book-open" class="w-6 h-6 mr-2" /> Read the book
     </.link>
@@ -38,7 +38,7 @@
       <div class="mt-4">
         <.link
           href={~p"/admin/logs"}
-          class="text-gray-400 hover:text-amber-400 transition-colors duration-300"
+          class="text-on-surface-variant hover:text-secondary transition-colors duration-300"
         >
           <.icon name="hero-clock" class="w-4 h-4 inline mr-1" />Activity Logs
         </.link>
@@ -49,7 +49,7 @@
       <div class="mt-4">
         <.link
           href={~p"/protected/suggestions"}
-          class="text-gray-400 hover:text-amber-400 transition-colors duration-300"
+          class="text-on-surface-variant hover:text-secondary transition-colors duration-300"
         >
           <.icon name="hero-clipboard-document-list" class="w-4 h-4 inline mr-1" />Suggestions
         </.link>
@@ -58,7 +58,7 @@
   </div>
   
 <!-- Footer -->
-  <footer class="absolute bottom-4 text-gray-500 text-sm">
+  <footer class="absolute bottom-4 text-on-surface-variant text-sm">
     &copy; {DateTime.utc_now().year} Book of the Dead - With Phoenix v{Application.spec(
       :phoenix,
       :vsn

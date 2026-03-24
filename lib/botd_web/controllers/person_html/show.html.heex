@@ -25,14 +25,20 @@
   <p>No photo available</p>
 <% end %>
 
-<h2 class="grid text-2xl m-2 place-content-center">{@person.name}</h2>
-<h3 class="grid text-sm m-2 place-content-center">{@person.birth_date} - {@person.death_date}</h3>
+<h2 class="grid font-headline text-2xl text-on-surface m-2 place-content-center">
+  {@person.name}
+</h2>
+<h3 class="grid text-sm text-on-surface-variant m-2 place-content-center">
+  {@person.birth_date} - {@person.death_date}
+</h3>
 
 <.list>
   <:item title="Description">{@person.description}</:item>
 </.list>
 
-<h3 class="grid text-base m-2 place-content-center">Photo gallery</h3>
+<h3 class="grid font-headline text-base text-on-surface m-2 place-content-center">
+  Photo gallery
+</h3>
 <div class="grid grid-cols-2">
   <%= if Enum.any?(@person.photos) do %>
     <%= for photo <- @person.photos do %>

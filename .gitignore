@@ -51,3 +51,6 @@ priv/static/uploads/
 
 # stitch design
 /stitch-botd/
+
+# elixir-phoenix-guide plugin cache
+.elixir-phoenix-guide-project.json

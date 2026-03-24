@@ -27,46 +27,46 @@ defmodule BotdWeb.PaginationComponent do
 
   def pagination(assigns) do
     ~H"""
-    <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div class="flex items-center justify-between border-t border-outline-variant bg-surface-container px-4 py-3 sm:px-6">
       <div class="flex flex-1 justify-between sm:hidden">
         <%= if @page_number > 1 do %>
           <.link
             href={"#{@path}?page=#{@page_number - 1}&per_page=#{@per_page}"}
-            class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            class="relative inline-flex items-center border border-outline-variant bg-surface-container px-4 py-2 text-sm font-medium text-on-surface hover:bg-surface-container-high"
           >
             Previous
           </.link>
         <% else %>
-          <span class="relative inline-flex items-center rounded-md border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-500 cursor-not-allowed">
+          <span class="relative inline-flex items-center border border-outline-variant bg-surface-container-high px-4 py-2 text-sm font-medium text-on-surface-variant cursor-not-allowed">
             Previous
           </span>
         <% end %>
         <%= if @page_number < @total_pages do %>
           <.link
             href={"#{@path}?page=#{@page_number + 1}&per_page=#{@per_page}"}
-            class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            class="relative ml-3 inline-flex items-center border border-outline-variant bg-surface-container px-4 py-2 text-sm font-medium text-on-surface hover:bg-surface-container-high"
           >
             Next
           </.link>
         <% else %>
-          <span class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-500 cursor-not-allowed">
+          <span class="relative ml-3 inline-flex items-center border border-outline-variant bg-surface-container-high px-4 py-2 text-sm font-medium text-on-surface-variant cursor-not-allowed">
             Next
           </span>
         <% end %>
       </div>
       <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p class="text-sm text-gray-700">
+          <p class="text-sm text-on-surface-variant">
             Showing page <span class="font-medium">{@page_number}</span>
             of <span class="font-medium">{@total_pages}</span>
           </p>
         </div>
         <div>
-          <nav class="isolate inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
+          <nav class="isolate inline-flex -space-x-px" aria-label="Pagination">
             <%= if @page_number > 1 do %>
               <.link
                 href={"#{@path}?page=#{@page_number - 1}&per_page=#{@per_page}"}
-                class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                class="relative inline-flex items-center px-2 py-2 text-outline ring-1 ring-inset ring-outline-variant hover:bg-surface-container-high focus:z-20 focus:outline-offset-0"
               >
                 <span class="sr-only">Previous</span>
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -78,7 +78,7 @@ defmodule BotdWeb.PaginationComponent do
                 </svg>
               </.link>
             <% else %>
-              <span class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-300 ring-1 ring-inset ring-gray-300 cursor-not-allowed">
+              <span class="relative inline-flex items-center px-2 py-2 text-outline-variant ring-1 ring-inset ring-outline-variant cursor-not-allowed">
                 <span class="sr-only">Previous</span>
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path
@@ -89,16 +89,15 @@ defmodule BotdWeb.PaginationComponent do
                 </svg>
               </span>
             <% end %>
-            
-    <!-- Page number display -->
-            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+
+            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-on-surface ring-1 ring-inset ring-outline-variant focus:outline-offset-0">
               {@page_number} / {@total_pages}
             </span>
 
             <%= if @page_number < @total_pages do %>
               <.link
                 href={"#{@path}?page=#{@page_number + 1}&per_page=#{@per_page}"}
-                class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                class="relative inline-flex items-center px-2 py-2 text-outline ring-1 ring-inset ring-outline-variant hover:bg-surface-container-high focus:z-20 focus:outline-offset-0"
               >
                 <span class="sr-only">Next</span>
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -110,7 +109,7 @@ defmodule BotdWeb.PaginationComponent do
                 </svg>
               </.link>
             <% else %>
-              <span class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-300 ring-1 ring-inset ring-gray-300 cursor-not-allowed">
+              <span class="relative inline-flex items-center px-2 py-2 text-outline-variant ring-1 ring-inset ring-outline-variant cursor-not-allowed">
                 <span class="sr-only">Next</span>
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path

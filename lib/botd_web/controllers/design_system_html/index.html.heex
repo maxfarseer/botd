@@ -307,5 +307,130 @@
         </div>
       </div>
     </section>
+
+    <%!-- === HEADER === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Header</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <.header>
+          Page Title
+          <:subtitle>Supporting description text goes here</:subtitle>
+          <:actions>
+            <.button variant="primary">Action</.button>
+          </:actions>
+        </.header>
+      </div>
+    </section>
+
+    <%!-- === MODAL === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Modal</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <p class="text-sm text-on-surface-variant mb-4">
+          Click the button to open a modal dialog.
+        </p>
+        <.button variant="primary" phx-click={show_modal("design-system-modal")}>
+          Open Modal
+        </.button>
+        <.modal id="design-system-modal">
+          <h3 class="font-headline text-xl text-on-surface mb-4">Modal Title</h3>
+          <p class="text-sm text-on-surface-variant">
+            This is sample modal content. Modals overlay the page and trap focus until dismissed.
+          </p>
+        </.modal>
+      </div>
+    </section>
+
+    <%!-- === FLASH === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Flash</h2>
+
+      <div class="bg-surface-container-low p-6 space-y-4">
+        <div class="relative">
+          <div class="relative w-80 sm:w-96 rounded-lg p-3 ring-1 bg-primary-container text-primary ring-primary-container fill-primary">
+            <p class="flex items-center gap-1.5 text-sm font-semibold leading-6">
+              <.icon name="hero-information-circle-mini" class="h-4 w-4" /> Success!
+            </p>
+            <p class="mt-2 text-sm leading-5">Operation completed successfully.</p>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="relative w-80 sm:w-96 rounded-lg p-3 ring-1 bg-error-container text-error ring-error-container fill-error">
+            <p class="flex items-center gap-1.5 text-sm font-semibold leading-6">
+              <.icon name="hero-exclamation-circle-mini" class="h-4 w-4" /> Error!
+            </p>
+            <p class="mt-2 text-sm leading-5">Something went wrong. Please try again.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <%!-- === TABLE === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Table</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <.table rows={[
+          %{name: "Aleksei Petrov", place: "Moscow", year: "1923"},
+          %{name: "Maria Ivanova", place: "Saint Petersburg", year: "1945"},
+          %{name: "Nikolai Sokolov", place: "Kazan", year: "1961"}
+        ]}>
+          <:col :let={row} label="Name" primary>{row.name}</:col>
+          <:col :let={row} label="Place">{row.place}</:col>
+          <:col :let={row} label="Year">{row.year}</:col>
+        </.table>
+      </div>
+    </section>
+
+    <%!-- === LIST === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">List</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <.list>
+          <:item title="Name">Aleksei Petrov</:item>
+          <:item title="Born">12 March 1923</:item>
+          <:item title="Place">Moscow, Russia</:item>
+          <:item title="Occupation">Historian</:item>
+        </.list>
+      </div>
+    </section>
+
+    <%!-- === BACK === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Back Link</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <.back navigate={~p"/design-system"}>Back to Design System</.back>
+      </div>
+    </section>
+
+    <%!-- === PAGINATION === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Pagination</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <.pagination page_number={2} total_pages={5} per_page={10} path="/design-system" />
+      </div>
+    </section>
+
+    <%!-- === PERSON CARD === --%>
+    <section class="mb-16">
+      <h2 class="font-headline text-2xl text-primary mb-6">Person Card</h2>
+
+      <div class="bg-surface-container-low p-6">
+        <.person_card person={
+          %{
+            id: 0,
+            name: "Aleksei Petrov",
+            birth_date: "1923-03-12",
+            death_date: "1998-11-05",
+            photo_url: nil
+          }
+        } />
+      </div>
+    </section>
   </div>
 </div>

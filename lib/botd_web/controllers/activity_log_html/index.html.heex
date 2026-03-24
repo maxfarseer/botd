@@ -2,8 +2,8 @@
   Activity Logs
 </.header>
 
-<.table id="activity_logs" rows={@activity_logs}>
-  <:col :let={log} label="User Email">{log.user_email}</:col>
+<.table rows={@activity_logs}>
+  <:col :let={log} label="User Email" primary>{log.user_email}</:col>
   <:col :let={log} label="Action">
     <span class={action_color(log.action)}>{format_action(log.action)}</span>
   </:col>

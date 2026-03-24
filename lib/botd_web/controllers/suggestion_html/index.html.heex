@@ -7,7 +7,7 @@
     </.card>
   <% else %>
     <.card class="p-0">
-      <.data_table rows={@suggestions}>
+      <.table rows={@suggestions}>
         <:col :let={s} label="Name" primary>{s.name}</:col>
         <:col :let={s} label="Death Date">
           {Calendar.strftime(s.death_date, "%d %b %Y")}
@@ -26,7 +26,7 @@
             Review
           </.link>
         </:action>
-      </.data_table>
+      </.table>
     </.card>
   <% end %>
 </div>

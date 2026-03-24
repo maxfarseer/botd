@@ -1,0 +1,37 @@
+{
+  "includeCoAuthoredBy": true,
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(gh pr:*)",
+      "Bash(git add:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git diff:*)",
+      "Bash(git fetch:*)",
+      "Bash(git log:*)",
+      "Bash(git stash:*)",
+      "Bash(git status:*)",
+      "Bash(grep:*)",
+      "Bash(iex:*)",
+      "Bash(mix assets.build:*)",
+      "Bash(mix compile:*)",
+      "Bash(mix credo:*)",
+      "Bash(mix deps.get:*)",
+      "Bash(mix ecto.gen.migration:*)",
+      "Bash(mix ecto.migrate:*)",
+      "Bash(mix format:*)",
+      "Bash(mix sobelow:*)",
+      "Bash(mix test:*)",
+      "WebFetch(domain:fonts.google.com)",
+      "WebFetch(domain:fonts.googleapis.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:hex.pm)",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebSearch"
+    ]
+  },
+  "model": "opus"
+}

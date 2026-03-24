@@ -159,24 +159,12 @@
       <h2 class="font-headline text-2xl text-primary mb-6">Buttons</h2>
 
       <div class="flex flex-wrap gap-4 items-center bg-surface-container-low p-6">
-        <button class="px-6 py-2 bg-primary text-on-primary font-label font-semibold text-sm transition-colors duration-300 hover:bg-primary/90">
-          Primary
-        </button>
-        <button class="px-6 py-2 bg-surface-container-highest text-on-surface font-label font-semibold text-sm transition-colors duration-300 hover:bg-surface-bright">
-          Secondary
-        </button>
-        <button class="px-6 py-2 text-primary font-label font-semibold text-sm transition-colors duration-300 hover:text-primary/80">
-          Tertiary
-        </button>
-        <button class="px-6 py-2 bg-error-container text-error font-label font-semibold text-sm transition-colors duration-300 hover:bg-error-container/90">
-          Error
-        </button>
-        <button
-          class="px-6 py-2 bg-primary/50 text-on-primary/50 font-label font-semibold text-sm cursor-not-allowed"
-          disabled
-        >
-          Disabled
-        </button>
+        <.button variant="primary">Primary</.button>
+        <.button variant="secondary">Secondary</.button>
+        <.button variant="ghost">Tertiary</.button>
+        <.button variant="error">Error</.button>
+        <.button variant="success">Success</.button>
+        <.button disabled>Disabled</.button>
       </div>
     </section>
 
@@ -231,22 +219,22 @@
       <h2 class="font-headline text-2xl text-primary mb-6">Cards & Surfaces</h2>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-surface-container-lowest p-6 pixel-border-inset">
+        <.card elevation="lowest">
           <h3 class="font-headline text-lg text-on-surface mb-2">Lowest</h3>
           <p class="text-sm text-on-surface-variant">
             surface-container-lowest with pixel-border-inset
           </p>
-        </div>
-        <div class="bg-surface-container p-6 pixel-border-inset">
+        </.card>
+        <.card>
           <h3 class="font-headline text-lg text-on-surface mb-2">Default</h3>
           <p class="text-sm text-on-surface-variant">surface-container with pixel-border-inset</p>
-        </div>
-        <div class="bg-surface-container-high p-6 pixel-border-inset">
+        </.card>
+        <.card elevation="high">
           <h3 class="font-headline text-lg text-on-surface mb-2">High</h3>
           <p class="text-sm text-on-surface-variant">
             surface-container-high with pixel-border-inset
           </p>
-        </div>
+        </.card>
       </div>
     </section>
 

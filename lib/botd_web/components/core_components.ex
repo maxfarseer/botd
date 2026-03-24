@@ -51,7 +51,7 @@ defmodule BotdWeb.CoreComponents do
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
       class="relative z-50 hidden"
     >
-      <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div id={"#{@id}-bg"} class="bg-surface/90 fixed inset-0 transition-opacity" aria-hidden="true" />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -67,7 +67,7 @@ defmodule BotdWeb.CoreComponents do
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
+              class="relative hidden bg-surface-container p-14 pixel-border-inset border border-outline-variant transition"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -117,8 +117,8 @@ defmodule BotdWeb.CoreComponents do
       role="alert"
       class={[
         "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
+        @kind == :info && "bg-primary-container text-primary ring-primary-container fill-primary",
+        @kind == :error && "bg-error-container text-error ring-error-container fill-error"
       ]}
       {@rest}
     >
@@ -203,7 +203,7 @@ defmodule BotdWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-10 space-y-8 bg-white">
+      <div class="mt-10 space-y-8">
         {render_slot(@inner_block, f)}
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           {render_slot(action, f)}
@@ -219,10 +219,12 @@ defmodule BotdWeb.CoreComponents do
   ## Examples
 
       <.button>Send!</.button>
-      <.button phx-click="go" class="ml-2">Send!</.button>
+      <.button variant="secondary" phx-click="go">Cancel</.button>
+      <.button variant="error">Delete</.button>
   """
   attr :type, :string, default: nil
   attr :class, :string, default: nil
+  attr :variant, :string, default: "primary", values: ~w(primary secondary ghost error success)
   attr :rest, :global, include: ~w(disabled form name value)
 
   slot :inner_block, required: true
@@ -232,8 +234,9 @@ defmodule BotdWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
+        "phx-submit-loading:opacity-75 px-6 py-2 font-label font-semibold text-sm transition-colors duration-300",
+        !@rest[:disabled] && button_variant_classes(@variant),
+        @rest[:disabled] && "opacity-50 cursor-not-allowed bg-primary/50 text-on-primary/50",
         @class
       ]}
       {@rest}
@@ -242,6 +245,19 @@ defmodule BotdWeb.CoreComponents do
     </button>
     """
   end
+
+  defp button_variant_classes("primary"), do: "bg-primary text-on-primary hover:bg-primary/90"
+
+  defp button_variant_classes("secondary"),
+    do: "bg-surface-container-highest text-on-surface hover:bg-surface-bright"
+
+  defp button_variant_classes("ghost"), do: "text-primary hover:text-primary/80"
+
+  defp button_variant_classes("error"),
+    do: "bg-error-container text-error hover:bg-error-container/90"
+
+  defp button_variant_classes("success"),
+    do: "bg-primary-container text-primary hover:bg-primary-container/90"
 
   @doc """
   Renders an input with label and error messages.
@@ -311,7 +327,7 @@ defmodule BotdWeb.CoreComponents do
 
     ~H"""
     <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+      <label class="flex items-center gap-4 text-sm leading-6 text-on-surface">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -319,7 +335,7 @@ defmodule BotdWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+          class="bg-surface-container border-outline-variant text-primary focus:ring-primary"
           {@rest}
         />
         {@label}
@@ -336,7 +352,7 @@ defmodule BotdWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-xs focus:border-zinc-400 focus:ring-0 sm:text-sm"
+        class="mt-2 block w-full px-3 py-2 bg-surface-container border border-outline-variant text-on-surface focus:border-primary focus:ring-1 focus:ring-primary text-sm"
         multiple={@multiple}
         {@rest}
       >
@@ -356,9 +372,9 @@ defmodule BotdWeb.CoreComponents do
         id={@id}
         name={@name}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          "mt-2 block w-full px-3 py-2 bg-surface-container text-on-surface placeholder-outline focus:ring-1 focus:ring-primary text-sm min-h-[6rem]",
+          @errors == [] && "border border-outline-variant focus:border-primary",
+          @errors != [] && "border-error focus:border-error"
         ]}
         {@rest}
       >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -379,9 +395,9 @@ defmodule BotdWeb.CoreComponents do
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         multiple={@multiple}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          "mt-2 block w-full px-3 py-2 bg-surface-container text-on-surface placeholder-outline focus:ring-1 focus:ring-primary text-sm",
+          @errors == [] && "border border-outline-variant focus:border-primary",
+          @errors != [] && "border-error focus:border-error"
         ]}
         {@rest}
       />
@@ -398,7 +414,7 @@ defmodule BotdWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="font-label text-sm font-medium text-on-surface block mb-1">
       {render_slot(@inner_block)}
     </label>
     """
@@ -411,7 +427,7 @@ defmodule BotdWeb.CoreComponents do
 
   def error(assigns) do
     ~H"""
-    <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
+    <p class="mt-3 flex gap-3 text-sm leading-6 text-error">
       <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
       {render_slot(@inner_block)}
     </p>
@@ -431,10 +447,10 @@ defmodule BotdWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1 class="text-lg font-semibold leading-8 text-on-surface">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-on-surface-variant">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -477,7 +493,7 @@ defmodule BotdWeb.CoreComponents do
     ~H"""
     <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
       <table class="w-[40rem] mt-11 sm:w-full">
-        <thead class="text-sm text-left leading-6 text-zinc-500">
+        <thead class="text-sm text-left leading-6 text-on-surface-variant">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">{col[:label]}</th>
             <th :if={@action != []} class="relative p-0 pb-4">
@@ -488,27 +504,31 @@ defmodule BotdWeb.CoreComponents do
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
+          class="relative divide-y divide-outline-variant border-t border-outline-variant text-sm leading-6 text-on-surface"
         >
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
+          <tr
+            :for={row <- @rows}
+            id={@row_id && @row_id.(row)}
+            class="group hover:bg-surface-container-low"
+          >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
               class={["relative p-0", @row_click && "hover:cursor-pointer"]}
             >
               <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
-                <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
+                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-surface-container-low sm:rounded-l-xl" />
+                <span class={["relative", i == 0 && "font-semibold text-on-surface"]}>
                   {render_slot(col, @row_item.(row))}
                 </span>
               </div>
             </td>
             <td :if={@action != []} class="relative w-14 p-0">
               <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-zinc-50 sm:rounded-r-xl" />
+                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-surface-container-low sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}
-                  class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+                  class="relative ml-4 font-semibold leading-6 text-on-surface hover:text-on-surface-variant"
                 >
                   {render_slot(action, @row_item.(row))}
                 </span>
@@ -538,10 +558,10 @@ defmodule BotdWeb.CoreComponents do
   def list(assigns) do
     ~H"""
     <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
+      <dl class="-my-4 divide-y divide-outline-variant">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="w-1/4 flex-none text-zinc-500">{item.title}</dt>
-          <dd class="text-zinc-700">{render_slot(item)}</dd>
+          <dt class="w-1/4 flex-none text-on-surface-variant">{item.title}</dt>
+          <dd class="text-on-surface">{render_slot(item)}</dd>
         </div>
       </dl>
     </div>
@@ -563,7 +583,7 @@ defmodule BotdWeb.CoreComponents do
     <div class="mt-16">
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+        class="text-sm font-semibold leading-6 text-primary hover:text-primary/80"
       >
         <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
         {render_slot(@inner_block)}
@@ -571,6 +591,38 @@ defmodule BotdWeb.CoreComponents do
     </div>
     """
   end
+
+  @doc """
+  Renders a card surface with pixel-border styling.
+
+  ## Examples
+
+      <.card>Default card content</.card>
+      <.card elevation="high">Elevated card</.card>
+  """
+  attr :elevation, :string, default: "default", values: ~w(lowest default high)
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  def card(assigns) do
+    ~H"""
+    <div
+      class={[
+        "p-6 pixel-border-inset",
+        card_elevation_classes(@elevation),
+        @class
+      ]}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  defp card_elevation_classes("lowest"), do: "bg-surface-container-lowest"
+  defp card_elevation_classes("default"), do: "bg-surface-container"
+  defp card_elevation_classes("high"), do: "bg-surface-container-high"
 
   @doc """
   Renders a [Heroicon](https://heroicons.com).

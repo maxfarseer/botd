@@ -1,84 +1,82 @@
 <div class="mx-auto max-w-3xl">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">My Suggestions</h1>
+    <h1 class="font-headline text-2xl text-primary">My Suggestions</h1>
     <.link href={~p"/suggestions/new"} class="button">
       New Suggestion
     </.link>
   </div>
 
   <%= if Enum.empty?(@suggestions) do %>
-    <div class="bg-white shadow-sm rounded-lg p-6 text-center">
-      <p class="text-gray-500">You haven't made any suggestions yet.</p>
+    <.card class="text-center">
+      <p class="text-on-surface-variant">You haven't made any suggestions yet.</p>
       <.link
         href={~p"/suggestions/new"}
-        class="mt-4 inline-block text-blue-600 hover:text-blue-800"
+        class="mt-4 inline-block text-primary hover:text-primary/80"
       >
         Create your first suggestion
       </.link>
-    </div>
+    </.card>
   <% else %>
-    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <.card class="p-0 overflow-hidden">
+      <table class="min-w-full divide-y divide-outline-variant">
+        <thead class="bg-surface-container-high">
           <tr>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
             >
               Name
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
             >
               Death Date
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
             >
               Place
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
             >
               Status
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
             >
               Submitted
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="divide-y divide-outline-variant">
           <%= for suggestion <- @suggestions do %>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            <tr class="hover:bg-surface-container-low">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-on-surface">
                 {suggestion.name}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
                 {Calendar.strftime(suggestion.death_date, "%d %b %Y")}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
                 {suggestion.place}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class={[
-                  "px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                ]}>
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold">
                   {String.capitalize(to_string(suggestion.status))}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
                 {Calendar.strftime(suggestion.inserted_at, "%d %b %Y")}
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
-    </div>
+    </.card>
   <% end %>
 </div>

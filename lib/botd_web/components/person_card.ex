@@ -15,17 +15,17 @@ defmodule BotdWeb.PersonCard do
           <img
             src={@person.photo_url}
             alt={@person.name}
-            class="w-20 h-20 object-cover rounded-full border mr-6"
+            class="w-20 h-20 object-cover rounded-full border border-outline-variant mr-6"
           />
         <% else %>
-          <.icon name="hero-camera" class="w-20 h-20 text-gray-300 mr-6" />
+          <.icon name="hero-camera" class="w-20 h-20 text-outline mr-6" />
         <% end %>
         <div class="flex-1">
           <div class="text-xl mb-1">{@person.name}</div>
-          <div class="text-gray-500 text-xs mb-1 font-light">
+          <div class="text-on-surface-variant text-xs mb-1 font-light">
             {@person.birth_date} - {@person.death_date}
           </div>
-          <div class="text-gray-500 text-xs mb-2">
+          <div class="text-on-surface-variant text-xs mb-2">
             Несколько слов из description. Полный текст можно прочитать на странице человека. Здесь три строчки текста.
           </div>
         </div>

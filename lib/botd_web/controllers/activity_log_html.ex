@@ -6,9 +6,9 @@ defmodule BotdWeb.ActivityLogHTML do
 
   def action_color(action) do
     case action do
-      :create -> "text-green-600"
-      :edit -> "text-blue-600"
-      :remove -> "text-red-600"
+      :create -> "text-primary"
+      :edit -> "text-secondary"
+      :remove -> "text-error"
       _ -> ""
     end
   end

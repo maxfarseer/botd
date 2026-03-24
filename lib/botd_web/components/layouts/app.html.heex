@@ -1,12 +1,12 @@
-<header class="flex justify-center items-center h-16 text-base">
-  <.link href={~p"/people"}>
-    <.icon name="hero-user-group-solid" />
-    <span class="pl-2">Book of the dead</span>
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-surface border-b-4 border-surface-container-high/50 shadow-[0_20px_50px_rgba(135,211,212,0.05)]">
+  <.link href={~p"/people"} class="flex items-center gap-3">
+    <.icon name="hero-book-open-solid" class="w-6 h-6 text-primary" />
+    <span class="font-headline uppercase tracking-widest font-bold text-xl text-primary">
+      Book of the Dead
+    </span>
   </.link>
 </header>
-<main>
-  <div class="mx-auto">
-    <.flash_group flash={@flash} />
-    {@inner_content}
-  </div>
+<main class="pt-24 pb-16 px-6 max-w-7xl mx-auto">
+  <.flash_group flash={@flash} />
+  {@inner_content}
 </main>

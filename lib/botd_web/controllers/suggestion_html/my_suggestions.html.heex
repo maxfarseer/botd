@@ -18,65 +18,21 @@
     </.card>
   <% else %>
     <.card class="p-0 overflow-hidden">
-      <table class="min-w-full divide-y divide-outline-variant">
-        <thead class="bg-surface-container-high">
-          <tr>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
-            >
-              Name
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
-            >
-              Death Date
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
-            >
-              Place
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
-            >
-              Status
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
-            >
-              Submitted
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-outline-variant">
-          <%= for suggestion <- @suggestions do %>
-            <tr class="hover:bg-surface-container-low">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-on-surface">
-                {suggestion.name}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
-                {Calendar.strftime(suggestion.death_date, "%d %b %Y")}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
-                {suggestion.place}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold">
-                  {String.capitalize(to_string(suggestion.status))}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
-                {Calendar.strftime(suggestion.inserted_at, "%d %b %Y")}
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+      <.data_table rows={@suggestions}>
+        <:col :let={s} label="Name" primary>{s.name}</:col>
+        <:col :let={s} label="Death Date">
+          {Calendar.strftime(s.death_date, "%d %b %Y")}
+        </:col>
+        <:col :let={s} label="Place">{s.place}</:col>
+        <:col :let={s} label="Status">
+          <span class="px-2 inline-flex text-xs leading-5 font-semibold">
+            {String.capitalize(to_string(s.status))}
+          </span>
+        </:col>
+        <:col :let={s} label="Submitted">
+          {Calendar.strftime(s.inserted_at, "%d %b %Y")}
+        </:col>
+      </.data_table>
     </.card>
   <% end %>
 </div>

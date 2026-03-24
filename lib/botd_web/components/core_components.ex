@@ -625,6 +625,78 @@ defmodule BotdWeb.CoreComponents do
   defp card_elevation_classes("high"), do: "bg-surface-container-high"
 
   @doc """
+  Renders a dense data table with header background, suitable for admin/data views.
+
+  Unlike `table/1`, this component uses a card-style layout with colored header
+  and compact cells, suitable for data-heavy pages like suggestions.
+
+  ## Examples
+
+      <.data_table rows={@suggestions}>
+        <:col :let={s} label="Name" primary>{s.name}</:col>
+        <:col :let={s} label="Place">{s.place}</:col>
+        <:action :let={s}>
+          <.link href={~p"/items/\#{s.id}"}>View</.link>
+        </:action>
+      </.data_table>
+  """
+  attr :rows, :list, required: true
+  attr :class, :string, default: nil
+
+  slot :col, required: true do
+    attr :label, :string, required: true
+    attr :primary, :boolean
+  end
+
+  slot :action do
+    attr :label, :string
+  end
+
+  def data_table(assigns) do
+    ~H"""
+    <table class={["min-w-full divide-y divide-outline-variant", @class]}>
+      <thead class="bg-surface-container-high">
+        <tr>
+          <th
+            :for={col <- @col}
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
+          >
+            {col.label}
+          </th>
+          <th
+            :if={@action != []}
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"
+          >
+            {(@action |> List.first())[:label] || "Actions"}
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant">
+        <tr :for={row <- @rows} class="hover:bg-surface-container-low">
+          <td
+            :for={col <- @col}
+            class={[
+              "px-6 py-4 whitespace-nowrap text-sm",
+              col[:primary] && "font-medium text-on-surface",
+              !col[:primary] && "text-on-surface-variant"
+            ]}
+          >
+            {render_slot(col, row)}
+          </td>
+          <td :if={@action != []} class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <span :for={action <- @action}>
+              {render_slot(action, row)}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    """
+  end
+
+  @doc """
   Renders a [Heroicon](https://heroicons.com).
 
   Heroicons come in three styles – outline, solid, and mini.

@@ -173,44 +173,34 @@
       <h2 class="font-headline text-2xl text-primary mb-6">Inputs</h2>
 
       <div class="space-y-6 bg-surface-container-low p-6 max-w-md">
-        <div>
-          <label class="font-label text-sm font-medium text-on-surface block mb-1">
-            Text Input
-          </label>
-          <input
-            type="text"
-            placeholder="Enter name..."
-            class="w-full px-3 py-2 bg-surface-container border border-outline-variant text-on-surface placeholder-outline focus:border-primary focus:ring-1 focus:ring-primary text-sm"
-          />
-        </div>
-        <div>
-          <label class="font-label text-sm font-medium text-on-surface block mb-1">
-            Textarea
-          </label>
-          <textarea
-            placeholder="Tell us their story..."
-            rows="3"
-            class="w-full px-3 py-2 bg-surface-container border border-outline-variant text-on-surface placeholder-outline focus:border-primary focus:ring-1 focus:ring-primary text-sm"
-          ></textarea>
-        </div>
-        <div>
-          <label class="font-label text-sm font-medium text-on-surface block mb-1">Select</label>
-          <select class="w-full px-3 py-2 bg-surface-container border border-outline-variant text-on-surface focus:border-primary focus:ring-1 focus:ring-primary text-sm">
-            <option>Choose connection type</option>
-            <option>Family</option>
-            <option>Friend</option>
-            <option>Historical</option>
-          </select>
-        </div>
-        <div class="flex items-center gap-2">
-          <input
-            type="checkbox"
-            class="bg-surface-container border-outline-variant text-primary focus:ring-primary"
-          />
-          <label class="font-body text-sm text-on-surface">
-            I confirm this information is accurate
-          </label>
-        </div>
+        <.input
+          type="text"
+          name="demo_text"
+          value=""
+          label="Text Input"
+          placeholder="Enter name..."
+        />
+        <.input
+          type="textarea"
+          name="demo_textarea"
+          value=""
+          label="Textarea"
+          placeholder="Tell us their story..."
+        />
+        <.input
+          type="select"
+          name="demo_select"
+          value=""
+          label="Select"
+          prompt="Choose connection type"
+          options={~w(Family Friend Historical)}
+        />
+        <.input
+          type="checkbox"
+          name="demo_checkbox"
+          value="false"
+          label="I confirm this information is accurate"
+        />
       </div>
     </section>
 

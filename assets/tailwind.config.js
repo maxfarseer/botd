@@ -1,37 +1,13 @@
-// See the Tailwind configuration guide for advanced usage
-// https://tailwindcss.com/docs/configuration
-
+// Minimal v3-compat config: Heroicons plugin only.
+// All other config (colors, fonts, radii, variants) is in css/app.css via @theme.
 const plugin = require("tailwindcss/plugin")
 const fs = require("fs")
 const path = require("path")
 
 module.exports = {
-  content: [
-    "./js/**/*.js",
-    "../lib/botd_web.ex",
-    "../lib/botd_web/**/*.*ex"
-  ],
-  theme: {
-    extend: {
-      colors: {
-        brand: "#FD4F00",
-      }
-    },
-  },
   plugins: [
-    require("@tailwindcss/forms"),
-    // Allows prefixing tailwind classes with LiveView classes to add rules
-    // only when LiveView classes are applied, for example:
-    //
-    //     <div class="phx-click-loading:animate-ping">
-    //
-    plugin(({addVariant}) => addVariant("phx-click-loading", [".phx-click-loading&", ".phx-click-loading &"])),
-    plugin(({addVariant}) => addVariant("phx-submit-loading", [".phx-submit-loading&", ".phx-submit-loading &"])),
-    plugin(({addVariant}) => addVariant("phx-change-loading", [".phx-change-loading&", ".phx-change-loading &"])),
-
-    // Embeds Heroicons (https://heroicons.com) into your app.css bundle
-    // See your `CoreComponents.icon/1` for more information.
-    //
+    // Heroicons (https://heroicons.com) SVG-to-CSS-mask embedding.
+    // Requires matchComponents API not yet available in v4 CSS directives.
     plugin(function({matchComponents, theme}) {
       let iconsDir = path.join(__dirname, "../deps/heroicons/optimized")
       let values = {}

@@ -48,3 +48,6 @@ backup.sql
 /.env
 /.vscode
 priv/static/uploads/
+
+# stitch design
+/stitch-botd/

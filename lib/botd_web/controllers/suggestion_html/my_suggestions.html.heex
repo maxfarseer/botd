@@ -7,7 +7,7 @@
   </div>
 
   <%= if Enum.empty?(@suggestions) do %>
-    <div class="bg-white shadow rounded-lg p-6 text-center">
+    <div class="bg-white shadow-sm rounded-lg p-6 text-center">
       <p class="text-gray-500">You haven't made any suggestions yet.</p>
       <.link
         href={~p"/suggestions/new"}
@@ -17,7 +17,7 @@
       </.link>
     </div>
   <% else %>
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>

@@ -1,5 +1,123 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+/* === Tailwind v4 entry point === */
+@import "tailwindcss" source(none);
 
-/* This file is for your main application CSS */
+/* Source scanning: where to look for utility class usage */
+@source "../../lib/botd_web.ex";
+@source "../../lib/botd_web";
+@source "../js";
+
+/* Legacy JS config: Heroicons plugin only (requires matchComponents API) */
+@config "../tailwind.config.js";
+
+/* First-party plugin */
+@plugin "@tailwindcss/forms";
+
+/* === PhoenixLiveView loading variants === */
+@custom-variant phx-click-loading (&.phx-click-loading, .phx-click-loading &);
+@custom-variant phx-submit-loading (&.phx-submit-loading, .phx-submit-loading &);
+@custom-variant phx-change-loading (&.phx-change-loading, .phx-change-loading &);
+
+/* === Design System: Spectral Archive === */
+@theme {
+  /* Colors — Primary (Teal) */
+  --color-primary: #87d3d4;
+  --color-primary-container: #003536;
+  --color-on-primary: #003737;
+  --color-on-primary-container: #56a2a3;
+
+  /* Colors — Secondary (Gold) */
+  --color-secondary: #e9c349;
+  --color-secondary-container: #af8d11;
+  --color-on-secondary: #3c2f00;
+
+  /* Colors — Tertiary (Lavender) */
+  --color-tertiary: #d1c0df;
+  --color-tertiary-container: #352a42;
+  --color-on-tertiary: #372c44;
+
+  /* Colors — Surface (Dark backgrounds) */
+  --color-surface: #12131b;
+  --color-surface-bright: #383941;
+  --color-surface-dim: #12131b;
+  --color-surface-container: #1e1f27;
+  --color-surface-container-high: #292932;
+  --color-surface-container-highest: #33343d;
+  --color-surface-container-low: #1a1b23;
+  --color-surface-container-lowest: #0d0e15;
+  --color-surface-tint: #87d3d4;
+
+  /* Colors — On Surface (Text on dark) */
+  --color-on-surface: #e3e1ed;
+  --color-on-surface-variant: #c7c5cc;
+
+  /* Colors — Outline */
+  --color-outline: #919096;
+  --color-outline-variant: #46464c;
+
+  /* Colors — Error */
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+
+  /* Colors — Inverse */
+  --color-inverse-primary: #0c696a;
+  --color-inverse-surface: #e3e1ed;
+  --color-inverse-on-surface: #2f3038;
+
+  /* Colors — Brand alias */
+  --color-brand: #87d3d4;
+
+  /* Typography */
+  --font-headline: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-label: "Space Grotesk", system-ui, sans-serif;
+
+  /* Border Radius — all 0px for pixel aesthetic */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* Shadows — pixel style */
+  --shadow-pixel-inset: inset 4px 4px 0px 0px rgba(51, 52, 61, 1);
+  --shadow-stepped:
+    2px 2px 0px 0px rgba(51, 52, 61, 1), 4px 4px 0px 0px rgba(51, 52, 61, 1);
+}
+
+/* === Pixel Art Effects === */
+@utility text-glow {
+  text-shadow: 0 0 15px rgba(135, 211, 212, 0.4);
+}
+
+@utility dither-pattern {
+  background-image: radial-gradient(
+    rgba(135, 211, 212, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 4px 4px;
+}
+
+@utility crt-overlay {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.5) 0px,
+      transparent 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(135, 211, 212, 0.03) 0px,
+      rgba(233, 195, 73, 0.03) 1px,
+      rgba(209, 192, 223, 0.03) 2px,
+      transparent 3px
+    );
+}
+
+@utility pixel-border-inset {
+  box-shadow: inset 4px 4px 0px 0px rgba(51, 52, 61, 1);
+}

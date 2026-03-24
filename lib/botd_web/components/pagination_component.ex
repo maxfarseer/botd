@@ -62,7 +62,7 @@ defmodule BotdWeb.PaginationComponent do
           </p>
         </div>
         <div>
-          <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav class="isolate inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
             <%= if @page_number > 1 do %>
               <.link
                 href={"#{@path}?page=#{@page_number - 1}&per_page=#{@per_page}"}
